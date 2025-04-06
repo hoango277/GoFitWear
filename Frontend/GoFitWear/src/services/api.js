@@ -4,7 +4,7 @@ import axios from "../services/customizeAxios"
 
 
 const callHomeProduct = (page, size) =>{
-    return  axios.get("/products", {
+    return  axios.get("/api/products", {
         params:{page, size}
      })
     

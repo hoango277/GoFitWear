@@ -6,10 +6,12 @@ import Login from "./pages/Login"
 import Register from "./pages/Register"
 import ForgotPassword from "./pages/ForgotPassword"
 import ResetPassword from "./pages/ResetPassword"
+import CategoryProducts from "./pages/CategoryProducts"
 
 // Layout components
 import Header from "./components/home/Header"
 import Footer from "./components/home/Footer"
+import MainMenu from "./components/Navigation/MainMenu"
 import { Toaster } from "sonner"
 import UserProfile from "./pages/UserProfile"
 
@@ -31,6 +33,7 @@ const App = () => {
           element={
             <>
               <Header />
+              <MainMenu />
               <Home />
               <Footer />
             </>
@@ -43,7 +46,34 @@ const App = () => {
           element={
             <>
               <Header />
+              <MainMenu />
               <UserProfile/>
+              <Footer />
+            </>
+          }
+        />
+
+        {/* Category Products Route */}
+        <Route
+          path="/category/:categoryId"
+          element={
+            <>
+              <Header />
+              <MainMenu />
+              <CategoryProducts />
+              <Footer />
+            </>
+          }
+        />
+
+        {/* Subcategory Products Route */}
+        <Route
+          path="/category/:categoryId/:subcategoryId"
+          element={
+            <>
+              <Header />
+              <MainMenu />
+              <CategoryProducts />
               <Footer />
             </>
           }

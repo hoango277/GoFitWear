@@ -1,0 +1,43 @@
+/* Override Ant Design tab styles */
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: black !important;
+}
+
+.ant-tabs-ink-bar {
+  background-color: black !important; 
+}
+
+/* Override primary button color */
+.ant-btn-primary {
+  background-color: black !important;
+  border-color: black !important;
+}
+
+.ant-btn-primary:hover,
+.ant-btn-primary:focus {
+  background-color: #333 !important;
+  border-color: #333 !important;
+}
+
+/* Override tab hover color */
+.ant-tabs-tab:hover {
+  color: #333 !important;
+}
+
+/* Additional override for any active elements with primary color */
+.ant-checkbox-checked .ant-checkbox-inner {
+  background-color: black !important;
+  border-color: black !important;
+}
+
+.ant-radio-checked .ant-radio-inner {
+  border-color: black !important;
+}
+
+.ant-radio-checked .ant-radio-inner::after {
+  background-color: black !important;
+}
+
+.ant-switch-checked {
+  background-color: black !important;
+} 

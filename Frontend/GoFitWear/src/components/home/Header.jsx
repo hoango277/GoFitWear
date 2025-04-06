@@ -14,19 +14,11 @@ const Header = () => {
     const [dropdownVisible, setDropdownVisible] = useState(false);
     
     useEffect(() => {
-        let userToken = null;
-        if(localStorage.getItem('access_token') == null)
-        {
-            userToken = sessionStorage.getItem('access_token');
-        }
-        else
-        {
-             userToken  = localStorage.getItem('access_token');
-        }
+        
+        const userToken  = localStorage.getItem('access_token');
         setIsLoggedIn(!!userToken);
 
-        
-        // Fetch user information if logged in
+
         if (userToken) {
             fetchUserInfo(userToken);
         }
@@ -51,17 +43,10 @@ const Header = () => {
     // Function to fetch user information
     const fetchUserInfo = async () => {
         try {
-            let userStorage;
-            if(JSON.parse(localStorage.getItem("user")) === null)
-            {
-                userStorage = JSON.parse(localStorage.getItem("user"))
-            }
-            else{
-                userStorage = JSON.parse(sessionStorage.getItem("user"))
-            }
-            console.log(userStorage);
+
+            let userStorage = JSON.parse(localStorage.getItem("user"))
             setUserInfo({
-                name: userStorage.name,
+                name: userStorage.fullName,
                 username: userStorage.username,
                 avatar: null // URL to avatar image or null
             });
@@ -119,7 +104,7 @@ const Header = () => {
         <header className={`w-full sticky top-0 z-30 transition-all duration-300 ${
             isScrolled 
                 ? 'py-1.5 px-3 bg-black text-white shadow-md' 
-                : 'py-2.5 px-4 bg-white text-black shadow-sm'
+                : 'py-2.5 px-4 bg-white text-black'
         }`}>
             <div className="flex items-center justify-between">
                 {/* Logo */}
