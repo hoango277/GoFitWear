@@ -1,0 +1,32 @@
+/* Add CSS for the wishlist dropdown */
+.wishlist-dropdown .ant-popover-inner {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.wishlist-dropdown .ant-popover-arrow {
+  display: none;
+}
+
+/* Style badges for the header */
+.ant-badge-count {
+  box-shadow: none !important;
+  font-weight: 600 !important;
+  font-size: 10px !important;
+}
+
+/* Add hover effect for wishlist items */
+.wishlist-item:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Remove button hover effect */
+.wishlist-remove-btn {
+  opacity: 0.7;
+  transition: all 0.2s;
+}
+
+.wishlist-remove-btn:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.1);
+} 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { Pagination, Spin, Empty, Card, Row, Col, Select, Checkbox, Slider, Collapse, Button, Space, Divider } from 'antd';
+import { Pagination, Spin, Empty, Card, Row, Col, Select, Checkbox, Collapse, Button, Divider, Input } from 'antd';
 import { FiHeart, FiShoppingCart, FiFilter } from 'react-icons/fi';
 
 const { Option } = Select;
@@ -9,12 +9,13 @@ const { Panel } = Collapse;
 
 const CategoryProducts = () => {
   const { categoryId, subcategoryId } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(8);
-  const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState('newest');
   const [categoryName, setCategoryName] = useState('');
   const [subcategoryName, setSubcategoryName] = useState('');
@@ -27,7 +28,12 @@ const CategoryProducts = () => {
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState([]);
   const [selectedPriceRange, setSelectedPriceRange] = useState([0, 5000000]);
+  
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
+  
+  // Refs for price inputs (uncontrolled components)
+  const minPriceInputRef = useRef(null);
+  const maxPriceInputRef = useRef(null);
   
   // Track if filters have been changed to trigger API call
   const [filtersChanged, setFiltersChanged] = useState(false);
@@ -36,6 +42,22 @@ const CategoryProducts = () => {
   // Store all relevant category IDs (main category + subcategories)
   const [allCategoryIds, setAllCategoryIds] = useState([]);
 
+  // Parse URL search params for initial values
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const minPrice = params.get('minPrice');
+    const maxPrice = params.get('maxPrice');
+    
+    // Set initial values from URL if they exist
+    if (minPrice && maxPriceInputRef.current) {
+      minPriceInputRef.current.input.value = minPrice;
+    }
+    
+    if (maxPrice && maxPriceInputRef.current) {
+      maxPriceInputRef.current.input.value = maxPrice;
+    }
+  }, [location.search]);
+  
   // Fetch category names and subcategories
   useEffect(() => {
     const fetchCategoryData = async () => {
@@ -85,42 +107,48 @@ const CategoryProducts = () => {
     
     // If we're viewing a specific subcategory, only filter by that
     if (subcategoryId) {
-      filterBase = `category.categoryId:${subcategoryId}`;
+      filterBase = `(category.categoryId:${subcategoryId})`;
     } 
     // Otherwise include all relevant category IDs
     else if (allCategoryIds.length > 0) {
-      filterBase = allCategoryIds.map(id => `category.categoryId:${id}`).join(' or ');
+      const categoryFilters = allCategoryIds.map(id => `category.categoryId:${id}`).join(' or ');
+      filterBase = `(${categoryFilters})`;
     } 
     // Fallback to just the current category ID
     else {
-      filterBase = `category.categoryId:${categoryId}`;
+      filterBase = `(category.categoryId:${categoryId})`;
     }
     
     let filterString = filterBase;
     
     // Add brand filter
     if (selectedBrands.length > 0) {
-      filterString = `(${filterBase}) and (brand.brandId:${selectedBrands.join(' or brand.brandId:')})`;
+      const brandFilter = `(brand.brandId:${selectedBrands.join(' or brand.brandId:')})`;
+      filterString = `${filterBase} and ${brandFilter}`;
     }
     
     // Add price filter
     if (selectedPriceRange[0] > 0 || selectedPriceRange[1] < maxPrice) {
-      filterString += ` and price>=${selectedPriceRange[0]} and price<=${selectedPriceRange[1]}`;
+      const priceFilter = `(price>:${selectedPriceRange[0]}) and (price<:${selectedPriceRange[1]})`;
+      filterString += ` and ${priceFilter}`;
     }
     
     // Add specific subcategory filter if user selected some (but not on subcategory page)
     if (selectedSubcategories.length > 0 && !subcategoryId) {
       // Reset the filter string and use only selected subcategories
-      filterString = `(category.categoryId:${selectedSubcategories.join(' or category.categoryId:')})`;
+      const subCategoryFilter = `(category.categoryId:${selectedSubcategories.join(' or category.categoryId:')})`;
+      filterString = subCategoryFilter;
       
       // Re-add brand filter if needed
       if (selectedBrands.length > 0) {
-        filterString += ` and (brand.brandId:${selectedBrands.join(' or brand.brandId:')})`;
+        const brandFilter = `(brand.brandId:${selectedBrands.join(' or brand.brandId:')})`;
+        filterString += ` and ${brandFilter}`;
       }
       
       // Re-add price filter
       if (selectedPriceRange[0] > 0 || selectedPriceRange[1] < maxPrice) {
-        filterString += ` and price>=${selectedPriceRange[0]} and price<=${selectedPriceRange[1]}`;
+        const priceFilter = `(price>:${selectedPriceRange[0]}) and (price<:${selectedPriceRange[1]})`;
+        filterString += ` and ${priceFilter}`;
       }
     }
     
@@ -170,7 +198,6 @@ const CategoryProducts = () => {
         const productsData = response.data.data.data || [];
         setProducts(productsData);
         setTotalItems(response.data.data.meta.total || 0);
-        setTotalPages(response.data.data.meta.pages || 1);
         
         // Only extract brands and max price from initial load
         if (isInitialLoad || brands.length === 0) {
@@ -194,8 +221,18 @@ const CategoryProducts = () => {
             const roundedMaxPrice = Math.ceil(maxProductPrice / 100000) * 100000;
             
             if (!initialDataLoaded.current) {
-              setMaxPrice(roundedMaxPrice > 0 ? roundedMaxPrice : 5000000);
-              setSelectedPriceRange([0, roundedMaxPrice > 0 ? roundedMaxPrice : 5000000]);
+              const newMaxPrice = roundedMaxPrice > 0 ? roundedMaxPrice : 5000000;
+              setMaxPrice(newMaxPrice);
+              setSelectedPriceRange([0, newMaxPrice]);
+              
+              // Set the input values if they aren't already set from URL params
+              if (minPriceInputRef.current && !minPriceInputRef.current.input.value) {
+                minPriceInputRef.current.input.value = "0";
+              }
+              if (maxPriceInputRef.current && !maxPriceInputRef.current.input.value) {
+                maxPriceInputRef.current.input.value = newMaxPrice.toString();
+              }
+              
               initialDataLoaded.current = true;
             }
           }
@@ -252,31 +289,67 @@ const CategoryProducts = () => {
     setFiltersChanged(true);
   };
 
-  const handlePriceChange = (value) => {
-    setSelectedPriceRange(value);
+  // Only validate input is a number or empty
+  const validateNumberInput = (e) => {
+    // Allow backspace, delete, tab, escape, enter, and only numbers
+    const charCode = e.which ? e.which : e.keyCode;
+    if (
+      (charCode > 31 && (charCode < 48 || charCode > 57))
+    ) {
+      e.preventDefault();
+      return false;
+    }
+    return true;
   };
 
-  const handlePriceAfterChange = () => {
+  const handleApplyPriceFilter = () => {
+    // Get values directly from the DOM references instead of state
+    const minPrice = minPriceInputRef.current?.input.value || "0";
+    const maxPrice = maxPriceInputRef.current?.input.value || "5000000";
+    
+    // Parse to integers
+    const minPriceInt = minPrice === '' ? 0 : parseInt(minPrice);
+    const maxPriceInt = maxPrice === '' ? 5000000 : parseInt(maxPrice);
+    
+    // Ensure min is less than max
+    const validatedMin = Math.min(minPriceInt, maxPriceInt);
+    const validatedMax = Math.max(minPriceInt, maxPriceInt);
+    
+    // Update the filter state (this will trigger a re-render)
+    setSelectedPriceRange([validatedMin, validatedMax]);
     setCurrentPage(0); // Reset to first page on filter change
     setFiltersChanged(true);
+    
+    // Optionally update URL params to preserve filter state
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set('minPrice', validatedMin.toString());
+    searchParams.set('maxPrice', validatedMax.toString());
+    navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
   };
 
   const handleResetFilters = () => {
     setSelectedBrands([]);
     setSelectedSubcategories([]);
     setSelectedPriceRange([0, maxPrice]);
+    
+    // Reset input fields via refs
+    if (minPriceInputRef.current) {
+      minPriceInputRef.current.input.value = "0";
+    }
+    if (maxPriceInputRef.current) {
+      maxPriceInputRef.current.input.value = maxPrice.toString();
+    }
+    
     setCurrentPage(0);
     setFiltersChanged(true);
+    
+    // Clear URL params
+    navigate(location.pathname, { replace: true });
   };
 
   // Format price with comma as thousand separator
   const formatPrice = (price) => {
     return price?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  };
-
-  // Price formatter for the Slider component
-  const priceFormatter = (value) => {
-    return `${formatPrice(value)}₫`;
   };
 
   // Filter components
@@ -327,20 +400,38 @@ const CategoryProducts = () => {
         )}
 
         {/* Price range filter */}
-        <Panel header={<span className="font-medium">GIÁ</span>} key="3">
-          <Slider
-            range
-            min={0}
-            max={maxPrice}
-            value={selectedPriceRange}
-            onChange={handlePriceChange}
-            onAfterChange={handlePriceAfterChange}
-            tipFormatter={priceFormatter}
-            className="mt-6 mb-2"
-          />
-          <div className="flex justify-between">
-            <span>{priceFormatter(selectedPriceRange[0])}</span>
-            <span>{priceFormatter(selectedPriceRange[1])}</span>
+        <Panel header={<span className="font-medium">KHOẢNG GIÁ</span>} key="3">
+          <div className="price-range-filter mt-3">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="TỪ"
+                  prefix="đ"
+                  defaultValue="0"
+                  className="flex-1"
+                  ref={minPriceInputRef}
+                  onFocus={(e) => e.currentTarget.select()}
+                  onKeyPress={validateNumberInput}
+                />
+                <span className="text-gray-400">—</span>
+                <Input
+                  placeholder="ĐẾN"
+                  prefix="đ"
+                  defaultValue={maxPrice}
+                  className="flex-1"
+                  ref={maxPriceInputRef}
+                  onFocus={(e) => e.currentTarget.select()}
+                  onKeyPress={validateNumberInput}
+                />
+              </div>
+              <Button 
+                type="primary" 
+                onClick={handleApplyPriceFilter}
+                className="w-full bg-orange-500 hover:bg-orange-600 border-none"
+              >
+                ÁP DỤNG
+              </Button>
+            </div>
           </div>
         </Panel>
       </Collapse>
@@ -459,7 +550,7 @@ const CategoryProducts = () => {
                       ]}
                     >
                       <Link to={`/product/${product.productId}`}>
-                        <h3 className="font-medium text-sm mb-1 line-clamp-2 h-10">{product.name}</h3>
+                        <h3 className="font-medium text-sm mb-1 line-clamp-2 h-10 text-black">{product.name}</h3>
                         <div className="flex items-center">
                           <span className="font-bold text-black text-base mr-2">{formatPrice(product.price)}₫</span>
                         </div>
