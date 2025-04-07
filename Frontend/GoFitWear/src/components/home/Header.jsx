@@ -1,10 +1,11 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo.jpg"
 import { Input, Dropdown, Avatar, message, Empty, Badge, Popover } from 'antd';
-import { FiPhone, FiHome, FiUser, FiHeart, FiShoppingCart, FiLogOut, FiSettings, FiX } from 'react-icons/fi';
+import { FiPhone, FiHome, FiUser, FiHeart, FiShoppingCart, FiLogOut, FiSettings, FiX, FiSearch } from 'react-icons/fi';
 import { useState, useEffect, useCallback } from 'react';
 import authService from "../../services/auth.services";
 import { fetchWishlist, removeFromWishlist } from "../../services/api";
+import { UserOutlined } from '@ant-design/icons';
 
 const Header = () => {
     const { Search } = Input;
@@ -19,6 +20,7 @@ const Header = () => {
     
     // Function to fetch user's wishlist - defined as useCallback to avoid recreating it
     const fetchUserWishlist = useCallback(async (userId) => {
+        console.log(userId);
         if (!userId) return;
         
         try {
@@ -43,24 +45,26 @@ const Header = () => {
     // Effect to handle user authentication and load initial data
     useEffect(() => {
         const userToken = localStorage.getItem('access_token');
+        console.log("User token:", userToken);
         setIsLoggedIn(!!userToken);
 
         if (userToken) {
             try {
                 // Get user info from localStorage
                 const userStorage = JSON.parse(localStorage.getItem("user"));
-                
-                if (userStorage && userStorage.id) {
+                console.log("User storage:", userStorage);
+                if (userStorage && userStorage.userId) {
                     // Set user info
                     setUserInfo({
-                        id: userStorage.id,
+                        id: userStorage.userId,
                         name: userStorage.fullName,
                         username: userStorage.username,
+                        email: userStorage.email,
                         avatar: null
                     });
-                    
+
                     // Load wishlist immediately after user info is set
-                    fetchUserWishlist(userStorage.id);
+                    fetchUserWishlist(userStorage.userId);
                 }
             } catch (error) {
                 console.error("Failed to fetch user info:", error);
@@ -87,8 +91,8 @@ const Header = () => {
     useEffect(() => {
         const handleWishlistUpdate = () => {
             const userStorage = JSON.parse(localStorage.getItem("user"));
-            if (userStorage?.id) {
-                fetchUserWishlist(userStorage.id);
+            if (userStorage?.userId) {
+                fetchUserWishlist(userStorage.userId);
             }
         };
         
@@ -130,18 +134,6 @@ const Header = () => {
             ),
         },
         {
-            key: '3',
-            label: (
-                <NavLink to="/user/wishlist" className="flex items-center gap-2">
-                    <FiHeart /> Danh sách yêu thích
-                </NavLink>
-            ),
-        },
-        {
-            key: '5',
-            type: 'divider',
-        },
-        {
             key: '6',
             label: (
                 <div 
@@ -156,7 +148,7 @@ const Header = () => {
 
     const handleWishlistClick = () => {
         if (isLoggedIn) {
-            navigate('/user/wishlist');
+            navigate('/wishlist');
         } else {
             message.info("Vui lòng đăng nhập để xem danh sách yêu thích");
             navigate('/login');
@@ -263,20 +255,10 @@ const Header = () => {
                         </div>
                     ))}
                 </div>
-                {wishlistItems.length > 4 && (
-                    <div className="mt-2 text-center">
-                        <button
-                            onClick={handleWishlistClick}
-                            className="text-xs text-blue-600 hover:underline"
-                        >
-                            Xem tất cả ({wishlistCount} sản phẩm)
-                        </button>
-                    </div>
-                )}
                 <div className="mt-3 pt-2 border-t border-gray-200">
                     <button
                         onClick={handleWishlistClick}
-                        className="w-full py-1.5 bg-black text-white text-xs font-medium rounded"
+                        className="w-full py-1.5 bg-black text-white text-xs font-medium rounded hover:bg-gray-800 transition-colors duration-300 cursor-pointer active:bg-gray-900"
                     >
                         Xem chi tiết
                     </button>
@@ -298,7 +280,7 @@ const Header = () => {
                         <img 
                             src={logo} 
                             alt="Logo" 
-                            className={`transition-all duration-300 rounded-full ${
+                            className={`transition-all duration-300 ml-45 rounded-full ${
                                 isScrolled ? 'h-10 w-10' : 'h-12 w-12'
                             }`}
                         />
@@ -313,30 +295,38 @@ const Header = () => {
                     </div>
                 </div>
 
-                {/* Search Bar - Chỉ hiển thị khi không cuộn */}
+                {/* Search Bar */}
                 {!isScrolled && (
                     <div className="relative flex-grow max-w-md mx-4 transition-all duration-300">
-                        <Search 
-                            className="w-full" 
-                            placeholder="Bạn muốn tìm gì?" 
-                            size="small"
-                        />
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Bạn muốn tìm gì?"
+                                className="w-full py-2 pl-4 pr-10 text-sm border-1 border-gray-300 rounded-full focus:outline-none focus:border-black transition-all duration-300 hover:border-gray-300"
+                            />
+                            <button className="absolute right-0 top-0 h-full px-4 flex items-center justify-center text-gray-400 hover:text-black transition-colors duration-300">
+                                <FiSearch className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 )}
 
                 {/* Navigation Icons */}
                 <div className="flex items-center">
                     <div className={`hidden md:flex items-center transition-all duration-300 ${
-                        isScrolled ? 'mr-2' : 'mr-3'
+                        isScrolled ? 'mr-4' : 'mr-6'
                     }`}>
-                        <FiPhone className="mr-1" />
+                        <FiPhone className="mr-2" />
                         <span className={isScrolled ? 'text-xs' : 'text-sm'}>0366469999</span>
                     </div>
 
-                    <div className={`hidden md:flex items-center transition-all duration-300 ${
-                        isScrolled ? 'mr-2' : 'mr-3'
-                    }`}>
-                        <FiHome className="mr-1" />
+                    <div 
+                        className={`hidden md:flex items-center transition-all duration-300 cursor-pointer hover:opacity-80 ${
+                            isScrolled ? 'mr-4' : 'mr-6'
+                        }`}
+                        onClick={() => navigate('/he-thong-cua-hang')}
+                    >
+                        <FiHome className="mr-2" />
                         <span className={isScrolled ? 'text-xs' : 'text-sm'}>180 Hồng Bàng</span>
                     </div>
 
@@ -350,25 +340,25 @@ const Header = () => {
                     >
                         <div 
                             className={`relative transition-all duration-300 cursor-pointer ${
-                                isScrolled ? 'mr-2 mb-0.5' : 'mr-3'
+                                isScrolled ? 'mr-4 mb-0.5 mt-2' : 'mr-6 mt-2'
                             }`}
                             onClick={handleWishlistClick}
                         >
                             <Badge count={wishlistCount} size="small" offset={[-2, 2]}>
-                                <FiHeart className={`${isScrolled ? 'text-base text-white' : 'text-lg'}`} />
+                                <FiHeart className={`${isScrolled ? 'text-base text-white ' : 'text-lg'}`} />
                             </Badge>
                         </div>
                     </Popover>
 
                     {/* Cart */}
                     <div className={`relative transition-all duration-300 cursor-pointer ${
-                        isScrolled ? 'mr-2 mb-0.5' : 'mr-3'
+                        isScrolled ? 'ml-1 mr-3 mb-0.5 mt-2' : 'ml-2 mr-5 mt-2'
                     }`}>
                         <Badge count={0} size="small" offset={[-2, 2]} showZero={false}>
                             <FiShoppingCart className={`${isScrolled ? 'text-base text-white' : 'text-lg'}`} />
                         </Badge>
                     </div>
-                    
+
                     {/* Login or User Profile */}
                     {isLoggedIn ? (
                         <Dropdown 
@@ -377,20 +367,8 @@ const Header = () => {
                             trigger={['click']}
                             onOpenChange={(visible) => setDropdownVisible(visible)}
                         >
-                            <div className="cursor-pointer relative">
-                                {userInfo?.avatar ? (
-                                    <Avatar 
-                                        src={userInfo.avatar} 
-                                        size={isScrolled ? 24 : 30}
-                                        className="transition-all duration-300"
-                                    />
-                                ) : (
-                                    <div className={`flex items-center justify-center rounded-full bg-blue-500 text-white transition-all duration-300 ${
-                                        isScrolled ? 'w-6 h-6' : 'w-8 h-8'
-                                    }`}>
-                                        {userInfo?.name?.[0]?.toUpperCase() || <FiUser />}
-                                    </div>
-                                )}
+                            <div className="cursor-pointer relative ml-2 mr-45">
+                                <UserOutlined className="text-xl" />
                                 
                                 {/* Notification dot for open dropdown */}
                                 {dropdownVisible && (
@@ -399,7 +377,7 @@ const Header = () => {
                             </div>
                         </Dropdown>
                     ) : (
-                        <NavLink to="/login" className={`transition-all duration-300 ${
+                        <NavLink to="/login" className={`transition-all duration-300 mr-45${
                             isScrolled 
                                 ? 'text-xs hover:text-gray-300' 
                                 : 'text-sm hover:text-neutral-400'
@@ -411,6 +389,6 @@ const Header = () => {
             </div>
         </header>
     );
-}
+};
 
 export default Header;

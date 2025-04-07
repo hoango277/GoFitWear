@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Pagination, Spin, Empty, Card, Row, Col, Select, Checkbox, Collapse, Button, Divider, Input } from 'antd';
-import { FiHeart, FiShoppingCart, FiFilter } from 'react-icons/fi';
+import { FiFilter } from 'react-icons/fi';
+import ProductCard from '../components/ProductCard';
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -347,11 +348,6 @@ const CategoryProducts = () => {
     navigate(location.pathname, { replace: true });
   };
 
-  // Format price with comma as thousand separator
-  const formatPrice = (price) => {
-    return price?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  };
-
   // Filter components
   const FilterPanel = () => (
     <div className="filter-panel">
@@ -439,7 +435,7 @@ const CategoryProducts = () => {
   );
 
   return (
-    <div className="container mx-auto py-6 px-4">
+    <div className="container mx-auto px-4 py-8">
       {/* Breadcrumb */}
       <div className="flex items-center text-sm mb-6">
         <Link to="/" className="text-gray-500 hover:text-black">Trang chủ</Link>
@@ -458,11 +454,11 @@ const CategoryProducts = () => {
         )}
       </div>
 
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2">
-          {subcategoryId ? subcategoryName?.toUpperCase() : categoryName?.toUpperCase() || 'Sản phẩm'}
+      <div className="flex flex-col items-center mt-4.5 mb-8">
+        <h1 className="text-3xl font-extralight">
+          {subcategoryId ? subcategoryName?.toUpperCase() : categoryName?.toUpperCase() || 'SẢN PHẨM'}
         </h1>
-        <p className="text-gray-500">{totalItems} sản phẩm</p>
+        <span className="text-gray-700 mb-2">{totalItems} sản phẩm</span>
       </div>
 
       {/* Mobile Filters Button */}
@@ -514,68 +510,35 @@ const CategoryProducts = () => {
 
           {/* Products */}
           {loading ? (
-            <div className="flex justify-center items-center py-20">
-              <Spin size="large" tip="Đang tải sản phẩm..." />
+            <div className="flex justify-center my-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
             </div>
           ) : products.length === 0 ? (
-            <Empty description="Không tìm thấy sản phẩm nào" />
+            <div className="text-center py-12 text-gray-500">
+              Không có sản phẩm nào để hiển thị
+            </div>
           ) : (
-            <>
-              <Row gutter={[16, 24]}>
-                {products.map(product => (
-                  <Col xs={24} sm={12} md={8} lg={8} xl={6} key={product.productId}>
-                    <Card 
-                      hoverable 
-                      bodyStyle={{ padding: '12px' }}
-                      cover={
-                        <Link to={`/product/${product.productId}`}>
-                          <div className="relative pb-[100%] overflow-hidden">
-                            <img 
-                              alt={product.name} 
-                              src={product.imageUrl || 'https://placehold.co/300x300?text=No+Image'} 
-                              className="absolute inset-0 w-full h-full object-cover transition-transform hover:scale-105"
-                            />
-                            {/* Display brand tag */}
-                            {product.brand && (
-                              <div className="absolute top-2 right-2 bg-black text-white px-2 py-1 text-xs font-medium uppercase">
-                                {product.brand.name}
-                              </div>
-                            )}
-                          </div>
-                        </Link>
-                      }
-                      actions={[
-                        <FiHeart key="heart" className="text-lg" />,
-                        <FiShoppingCart key="cart" className="text-lg" />
-                      ]}
-                    >
-                      <Link to={`/product/${product.productId}`}>
-                        <h3 className="font-medium text-sm mb-1 line-clamp-2 h-10 text-black">{product.name}</h3>
-                        <div className="flex items-center">
-                          <span className="font-bold text-black text-base mr-2">{formatPrice(product.price)}₫</span>
-                        </div>
-                      </Link>
-                    </Card>
-                  </Col>
-                ))}
-              </Row>
-
-              {/* Pagination */}
-              <div className="flex justify-center mt-10">
-                <Pagination 
-                  current={currentPage + 1} 
-                  total={totalItems} 
-                  pageSize={pageSize} 
-                  onChange={handlePageChange}
-                  showSizeChanger
-                  onShowSizeChange={(current, size) => {
-                    setPageSize(size);
-                    setCurrentPage(0);
-                  }}
-                />
-              </div>
-            </>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {products.map((product) => (
+                <ProductCard key={product.productId} product={product} />
+              ))}
+            </div>
           )}
+
+          {/* Pagination */}
+          <div className="flex justify-center mt-10">
+            <Pagination 
+              current={currentPage + 1} 
+              total={totalItems} 
+              pageSize={pageSize} 
+              onChange={handlePageChange}
+              showSizeChanger
+              onShowSizeChange={(current, size) => {
+                setPageSize(size);
+                setCurrentPage(0);
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>

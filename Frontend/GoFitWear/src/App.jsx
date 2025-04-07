@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom"
 
 // Pages
 import Home from "./pages/Home"
@@ -7,6 +7,9 @@ import Register from "./pages/Register"
 import ForgotPassword from "./pages/ForgotPassword"
 import ResetPassword from "./pages/ResetPassword"
 import CategoryProducts from "./pages/CategoryProducts"
+import ProductDetail from "./pages/ProductDetail"
+import WishlistPage from "./pages/WishlistPage"
+import StoreSystem from './pages/StoreSystem'
 
 // Layout components
 import Header from "./components/home/Header"
@@ -34,11 +37,17 @@ const App = () => {
             <>
               <Header />
               <MainMenu />
-              <Home />
+              <Outlet />
               <Footer />
             </>
           }
-        />
+        >
+          <Route index element={<Home />} />
+          <Route path="category/:categoryId" element={<CategoryProducts />} />
+          <Route path="product/:productId" element={<ProductDetail />} />
+          <Route path="wishlist" element={<WishlistPage />} />
+          <Route path="he-thong-cua-hang" element={<StoreSystem />} />
+        </Route>
 
        {/* User Profile Route */}
         <Route
@@ -74,6 +83,32 @@ const App = () => {
               <Header />
               <MainMenu />
               <CategoryProducts />
+              <Footer />
+            </>
+          }
+        />
+
+        {/* Product Detail Route */}
+        <Route
+          path="/product/:productId"
+          element={
+            <>
+              <Header />
+              <MainMenu />
+              <ProductDetail />
+              <Footer />
+            </>
+          }
+        />
+
+        {/* Wishlist Route */}
+        <Route
+          path="/wishlist"
+          element={
+            <>
+              <Header />
+              <MainMenu />
+              <WishlistPage />
               <Footer />
             </>
           }

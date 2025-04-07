@@ -1,32 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+@import "tailwindcss/preflight";
+@tailwind utilities;
+
+:root {
+    --font-montserrat: 'Montserrat', sans-serif;
+}
+
+body {
+    font-family: var(--font-montserrat);
+}
+
+/* Global font override */
+*, 
+*::before, 
+*::after {
+    font-family: var(--font-montserrat) !important;
+}
+
+/* Antd specific overrides */
+.ant-btn,
+.ant-input,
+.ant-input-number,
+.ant-select,
+.ant-select-selection-item,
+.ant-select-item,
+.ant-dropdown-menu,
+.ant-dropdown-menu-item,
+.ant-modal,
+.ant-modal-title,
+.ant-modal-content,
+.ant-message,
+.ant-message-notice-content,
+.ant-popover,
+.ant-popover-inner-content,
+.ant-menu,
+.ant-menu-item,
+.ant-form,
+.ant-form-item,
+.ant-form-item-label > label,
+.ant-typography,
+.ant-badge,
+.ant-badge-count,
+.ant-tabs,
+.ant-tabs-tab,
+.ant-card,
+.ant-card-meta-title,
+.ant-card-meta-description,
+.ant-table,
+.ant-table-cell,
+.ant-pagination,
+.ant-pagination-item,
+.ant-breadcrumb,
+.ant-breadcrumb-link,
+.ant-descriptions,
+.ant-descriptions-item,
+.ant-tag,
+.ant-alert,
+.ant-notification,
+.ant-drawer,
+.ant-drawer-title,
+.ant-steps,
+.ant-steps-item,
+.ant-radio-wrapper,
+.ant-checkbox-wrapper,
+.ant-tooltip {
+    font-family: var(--font-montserrat) !important;
+}
+
+/* Custom components font override */
+.product-title,
+.product-price,
+.product-description,
+.category-title,
+.section-title,
+.header-title,
+.footer-text,
+.nav-link,
+.button-text,
+.input-label,
+.cart-item,
+.wishlist-item {
+    font-family: var(--font-montserrat) !important;
+}
+
 /* Add CSS for the wishlist dropdown */
 .wishlist-dropdown .ant-popover-inner {
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .wishlist-dropdown .ant-popover-arrow {
-  display: none;
+    display: none;
 }
 
 /* Style badges for the header */
 .ant-badge-count {
-  box-shadow: none !important;
-  font-weight: 600 !important;
-  font-size: 10px !important;
+    box-shadow: none !important;
+    font-weight: 600 !important;
+    font-size: 10px !important;
 }
 
 /* Add hover effect for wishlist items */
 .wishlist-item:hover {
-  background-color: rgba(0, 0, 0, 0.03);
+    background-color: rgba(0, 0, 0, 0.03);
 }
 
 /* Remove button hover effect */
 .wishlist-remove-btn {
-  opacity: 0.7;
-  transition: all 0.2s;
+    opacity: 0.7;
+    transition: all 0.2s;
 }
 
 .wishlist-remove-btn:hover {
-  opacity: 1;
-  background-color: rgba(0, 0, 0, 0.1);
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.1);
 } 
