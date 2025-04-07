@@ -62,6 +62,19 @@ const App = () => {
           }
         />
 
+        {/* All Products Route */}
+        <Route
+          path="/category"
+          element={
+            <>
+              <Header />
+              <MainMenu />
+              <CategoryProducts />
+              <Footer />
+            </>
+          }
+        />
+
         {/* Category Products Route */}
         <Route
           path="/category/:categoryId"
