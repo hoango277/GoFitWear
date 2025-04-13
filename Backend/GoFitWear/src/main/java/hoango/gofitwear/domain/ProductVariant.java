@@ -33,6 +33,9 @@ public class ProductVariant {
     @Column(name = "price", precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Column(name="image_url", columnDefinition = "MEDIUMTEXT")
+    private String imageUrl;
+
     @Column(name = "stock_quantity", nullable = false)
     private Integer stockQuantity = 0;
 

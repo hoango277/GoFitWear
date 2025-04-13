@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom"
+import ScrollToTop from "./components/ScrollToTop"
 
 // Pages
 import Home from "./pages/Home"
@@ -10,6 +11,7 @@ import CategoryProducts from "./pages/CategoryProducts"
 import ProductDetail from "./pages/ProductDetail"
 import WishlistPage from "./pages/WishlistPage"
 import StoreSystem from './pages/StoreSystem'
+import Cart from './pages/Cart'
 
 // Layout components
 import Header from "./components/home/Header"
@@ -23,6 +25,7 @@ import UserProfile from "./pages/UserProfile"
 const App = () => {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Auth routes (no header/footer) */}
         <Route path="/login" element={<Login />} />
@@ -122,6 +125,19 @@ const App = () => {
               <Header />
               <MainMenu />
               <WishlistPage />
+              <Footer />
+            </>
+          }
+        />
+
+        {/* Cart Route */}
+        <Route
+          path="/cart"
+          element={
+            <>
+              <Header />
+              <MainMenu />
+              <Cart />
               <Footer />
             </>
           }

@@ -10,6 +10,14 @@ const callHomeProduct = (page, size) =>{
     
 }
 
+export const mostSaleProduct = (page, size) =>{
+    return  customAxios.get("/api/products", {
+        params:{page, size}
+     })
+    
+}
+
+
 // Wishlist API functions
 export const fetchWishlist = async (userId) => {
     try {

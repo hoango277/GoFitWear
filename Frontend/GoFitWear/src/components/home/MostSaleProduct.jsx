@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Spin } from 'antd';
-import { callHomeProduct } from '../../services/api';
+import { callHomeProduct, mostSaleProduct } from '../../services/api';
 import ProductCard from '../ProductCard';
 import { HeartIcon as HeartOutline } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 import { message } from 'antd';
 import { addToWishlist, removeFromWishlist, fetchWishlist } from '../../services/api';
 
-const NewItemsOnSale = () => {
+const MostSaleProduct = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -53,7 +53,7 @@ const NewItemsOnSale = () => {
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            const response = await callHomeProduct(currentPage, 8);
+            const response = await mostSaleProduct(1, 8);
             setProducts(response.data.data);
         } catch (error) {
             console.error("Error fetching products:", error);
@@ -113,8 +113,8 @@ const NewItemsOnSale = () => {
     return (
         <div className="container mx-auto px-4 py-8 font-montserrat">
             <div className="flex flex-col items-center mt-4.5 mb-8">
-                <h1 className="text-3xl font-extralight section-title">SẢN PHẨM MỚI</h1>
-                <span className="text-gray-700 mb-2">Những xu hướng thời trang mới</span>
+                <h1 className="text-3xl font-extralight section-title">SẢN PHẨM BÁN CHẠY</h1>
+                <span className="text-gray-700 mb-2">Những sản phẩm bán chạy trong thời gian gần đây</span>
             </div>
 
             {products.length === 0 ? (
@@ -188,4 +188,4 @@ const NewItemsOnSale = () => {
     );
 };
 
-export default NewItemsOnSale;
+export default MostSaleProduct;

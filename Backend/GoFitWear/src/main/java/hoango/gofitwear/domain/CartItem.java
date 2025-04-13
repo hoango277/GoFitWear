@@ -22,10 +22,6 @@ public class CartItem {
     private Cart cart;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
-
-    @ManyToOne
     @JoinColumn(name = "variant_id")
     private ProductVariant variant;
 

@@ -28,7 +28,7 @@ const CustomerFeedback = () => {
               {/* Customer image */}
               <div className="mb-4 w-full aspect-square overflow-hidden">
                 <img 
-                  src="https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHBlb3BsZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60" 
+                  src="https://pos.nvncdn.com/8ca22b-20641/bn/20210111_Jrb2JAcBADV7aEY5cZZLn1uv.jpg" 
                   alt="Feedback from Anh Công Nguyễn"
                   className="w-full h-full object-cover"
                   onError={(e) => {
@@ -55,7 +55,7 @@ const CustomerFeedback = () => {
               {/* Customer image */}
               <div className="mb-4 w-full aspect-square overflow-hidden">
                 <img 
-                  src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTh8fHBlb3BsZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60" 
+                  src="https://pos.nvncdn.com/8ca22b-20641/bn/20210111_fFulwK9XK1MHjdH8t80FHv5L.jpg" 
                   alt="Feedback from Anh Giang Hoàng"
                   className="w-full h-full object-cover"
                   onError={(e) => {
@@ -82,7 +82,7 @@ const CustomerFeedback = () => {
               {/* Customer image */}
               <div className="mb-4 w-full aspect-square overflow-hidden">
                 <img 
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MjJ8fHBlb3BsZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60" 
+                  src="https://pos.nvncdn.com/8ca22b-20641/bn/20210111_8VlMaXH8RYsDg29IGCFQ7b23.jpg" 
                   alt="Feedback from Anh Nhật Quý"
                   className="w-full h-full object-cover"
                   onError={(e) => {
