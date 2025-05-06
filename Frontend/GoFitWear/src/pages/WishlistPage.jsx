@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Empty, message } from 'antd';
 import { fetchWishlist, removeFromWishlist } from '../services/api';
 import { useNavigate } from 'react-router-dom';
-import { FiTrash2 } from 'react-icons/fi';
+import { FiTrash2, FiShoppingBag } from 'react-icons/fi';
 
 const WishlistPage = () => {
     const [wishlistItems, setWishlistItems] = useState([]);
@@ -69,25 +69,41 @@ const WishlistPage = () => {
 
     if (wishlistItems.length === 0) {
         return (
-            <div className="min-h-screen flex justify-center items-center">
-                <Empty 
-                    description="Chưa có sản phẩm yêu thích" 
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                />
+            <div className="container mx-auto px-4 py-12 flex flex-col items-center justify-center min-h-[60vh]">
+                <h1 className="text-2xl font-bold mb-8">SẢN PHẨM YÊU THÍCH</h1>
+                <div className="text-center max-w-md">
+                    <Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description={
+                            <span className="text-lg text-gray-500">
+                                Danh sách yêu thích của bạn hiện đang trống
+                            </span>
+                        }
+                    />
+                    <p className="mt-4 text-gray-500">
+                        Hãy thêm sản phẩm vào danh sách yêu thích để dễ dàng theo dõi và mua sau
+                    </p>
+                    <button 
+                        onClick={() => navigate('/')}
+                        className="mt-8 px-6 py-3 bg-black text-white font-medium rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center mx-auto"
+                    >
+                        <FiShoppingBag className="mr-2" /> Khám phá sản phẩm
+                    </button>
+                </div>
             </div>
         );
     }
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-[80%] font-montserrat">
-            <div className="border-2 border-gray-300">
+            <div className="border-2 border-gray-300 shadow-[0_8px_40px_0_rgba(0,0,0,0.25)]">
                 <h1 className="text-2xl font-bold text-center bg-black text-white py-4 font-montserrat">
                     SẢN PHẨM YÊU THÍCH
                 </h1>
                 <div className="p-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {wishlistItems.map((item) => (
-                            <div key={item.id} className="group relative bg-white p-4 border-2 border-gray-300">
+                            <div key={item.id} className="group relative bg-white p-4 border-2 border-gray-300 rounded-xl shadow-[0_6px_32px_0_rgba(0,0,0,0.28)]">
                                 <div 
                                     className="aspect-w-1 aspect-h-1 cursor-pointer"
                                     onClick={() => navigate(`/product/${item.product.productId}`)}
@@ -114,7 +130,7 @@ const WishlistPage = () => {
                                     <p className="text-sm font-semibold mt-2 product-price">{formatPrice(item.product.price)}</p>
                                     <button 
                                         onClick={() => navigate(`/product/${item.product.productId}`)}
-                                        className="w-full mt-2 py-2 bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors rounded-md button-text"
+                                        className="w-full mt-2 py-2 bg-black text-white text-sm font-medium border-2 border-black rounded shadow-[0_4px_24px_0_rgba(0,0,0,0.28)] hover:bg-white hover:text-black hover:border-black transition-colors button-text"
                                     >
                                         MUA NGAY
                                     </button>
@@ -128,4 +144,4 @@ const WishlistPage = () => {
     );
 };
 
-export default WishlistPage; 
+export default WishlistPage;

@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo.jpg"
 import { Input, Dropdown, Avatar, message, Empty, Badge, Popover, Menu, Spin } from 'antd';
-import { FiPhone, FiHome, FiUser, FiHeart, FiShoppingCart, FiLogOut, FiSettings, FiX, FiSearch } from 'react-icons/fi';
+import { FiPhone, FiHome, FiUser, FiHeart, FiShoppingCart, FiLogOut, FiSettings, FiX, FiSearch, FiMapPin, FiInfo } from 'react-icons/fi';
 import { useState, useEffect, useCallback } from 'react';
 import authService from "../../services/auth.services";
 import { fetchWishlist, removeFromWishlist } from "../../services/api";
@@ -177,6 +177,14 @@ const Header = () => {
             label: (
                 <NavLink to="/user/profile" className="flex items-center gap-2">
                     <FiUser /> Thông tin tài khoản
+                </NavLink>
+            ),
+        },
+        {
+            key: '3',
+            label: (
+                <NavLink to="/order" className="flex items-center gap-2">
+                    <FiShoppingCart /> Đơn đã mua
                 </NavLink>
             ),
         },
@@ -545,15 +553,25 @@ const Header = () => {
                         <span className={isScrolled ? 'text-xs' : 'text-sm'}>0366469999</span>
                     </div>
 
-                    <div 
+                    <NavLink
+                        to="/he-thong-cua-hang"
                         className={`hidden md:flex items-center transition-all duration-300 cursor-pointer hover:opacity-80 ${
                             isScrolled ? 'mr-4' : 'mr-6'
                         }`}
-                        onClick={() => navigate('/he-thong-cua-hang')}
                     >
-                        <FiHome className="mr-2" />
+                        <FiMapPin className="mr-2" />
                         <span className={isScrolled ? 'text-xs' : 'text-sm'}>180 Hồng Bàng</span>
-                    </div>
+                    </NavLink>
+
+                    <NavLink
+                        to="/ve-chung-toi"
+                        className={`hidden md:flex items-center transition-all duration-300 cursor-pointer hover:opacity-80 ${
+                            isScrolled ? 'mr-4' : 'mr-6'
+                        }`}
+                    >
+                        <FiInfo className="mr-2" />
+                        Về chúng tôi
+                    </NavLink>
 
                     {/* Wishlist with Dropdown */}
                     <Popover

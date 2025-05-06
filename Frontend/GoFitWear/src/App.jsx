@@ -12,6 +12,8 @@ import ProductDetail from "./pages/ProductDetail"
 import WishlistPage from "./pages/WishlistPage"
 import StoreSystem from './pages/StoreSystem'
 import Cart from './pages/Cart'
+import Checkout from './pages/Checkout'
+import Order from './pages/Order'
 
 // Layout components
 import Header from "./components/home/Header"
@@ -19,6 +21,7 @@ import Footer from "./components/home/Footer"
 import MainMenu from "./components/Navigation/MainMenu"
 import { Toaster } from "sonner"
 import UserProfile from "./pages/UserProfile"
+import AboutUs from "./pages/AboutUs"
 
 
 
@@ -50,6 +53,7 @@ const App = () => {
           <Route path="product/:productId" element={<ProductDetail />} />
           <Route path="wishlist" element={<WishlistPage />} />
           <Route path="he-thong-cua-hang" element={<StoreSystem />} />
+          <Route path="ve-chung-toi" element={<AboutUs/>} />
         </Route>
 
        {/* User Profile Route */}
@@ -138,6 +142,32 @@ const App = () => {
               <Header />
               <MainMenu />
               <Cart />
+              <Footer />
+            </>
+          }
+        />
+
+        {/* Checkout Route */}
+        <Route
+          path="/checkout"
+          element={
+            <>
+              <Header />
+              <MainMenu />
+              <Checkout />
+              <Footer />
+            </>
+          }
+        />
+
+        {/* Order History Route */}
+        <Route
+          path="/order"
+          element={
+            <>
+              <Header />
+              <MainMenu />
+              <Order />
               <Footer />
             </>
           }

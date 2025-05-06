@@ -90,13 +90,13 @@ const ProductCard = ({ product }) => {
 
     return (
         <div 
-            className="relative group font-montserrat"
+            className="relative group font-montserrat shadow-[0_6px_32px_0_rgba(0,0,0,0.28)] rounded-lg bg-white transition-transform duration-300 hover:shadow-xl hover:scale-105 flex flex-col h-full block"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
             <Link 
                 to={`/product/${product.productId}`} 
-                className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-xl hover:scale-105 flex flex-col h-full block"
+                className="flex flex-col h-full"
             >
                 <div className="h-64 overflow-hidden relative">
                     <img
@@ -147,4 +147,4 @@ const ProductCard = ({ product }) => {
     );
 };
 
-export default ProductCard; 
+export default ProductCard;

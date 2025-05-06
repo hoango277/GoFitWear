@@ -46,7 +46,7 @@ public class Order {
     private PaymentMethod paymentMethod;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_status")
+    @Column(name = "payment_status", columnDefinition = "TEXT")
     private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
@@ -62,7 +62,7 @@ public class Order {
     }
 
     public enum PaymentMethod {
-        COD, CREDIT_CARD, BANK_TRANSFER, E_WALLET
+        COD, MOMO, BANKING, VNPAY
     }
 
     public enum PaymentStatus {

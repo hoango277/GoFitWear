@@ -16,7 +16,7 @@ const StoreSystem = () => {
                             <h2 className="text-xl font-extralight text-red-500 mb-4">HÀ NỘI</h2>
                             <div className="space-y-4 ml-2">
                                 <div className='border-b border-black'>
-                                    <h3 className="font-semibold mb-2">Chi Nhánh - Domino - 180 Hồng Bàng</h3>
+                                    <h3 className="font-semibold mb-2">Chi Nhánh - GoFitWear - 180 Hồng Bàng</h3>
                                     <p className="flex items-center mb-1">
                                         <span className="mr-2">►</span>
                                         180 Hồng Bàng - Hoàn Kiếm - Hà Nội
