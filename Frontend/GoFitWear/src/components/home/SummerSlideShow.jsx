@@ -116,7 +116,7 @@ const SummerSlideshow = () => {
       {/* Promotional Banners */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Chaco Sandals Banner */}
-        <Link to="/category" className="relative group overflow-hidden">
+        <Link to="/all-products" className="relative group overflow-hidden">
           <img 
             src="https://pos.nvncdn.com/8ca22b-20641/bn/20250312_4cOYZMQm.gif"
             alt="Sandal Chaco Chính Hãng" 
@@ -124,14 +124,14 @@ const SummerSlideshow = () => {
           />
           <div className="absolute inset-x-0 bottom-0 pb-8 flex flex-col items-center text-center">
             <h3 className="text-2xl font-light text-white mb-2 drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] text-shadow-lg">SANDAL CHACO CHÍNH HÃNG</h3>
-            <Link to="/category" className="font-medium bg-black text-white px-6 py-2 text-sm hover:bg-white hover:text-black transition-colors duration-300 cursor-pointer">
+            <Link to="/all-products" className="font-medium bg-black text-white px-6 py-2 text-sm hover:bg-white hover:text-black transition-colors duration-300 cursor-pointer">
               XEM CHI TIẾT
             </Link>
           </div>
         </Link>
 
         {/* Lacoste Banner */}
-        <Link to="/category" className="relative group overflow-hidden">
+        <Link to="/all-products" className="relative group overflow-hidden">
           <img 
             src="https://pos.nvncdn.com/8ca22b-20641/bn/20250312_c9plVVC8.gif"
             alt="Dép Lacoste Chính Hãng" 
@@ -139,7 +139,7 @@ const SummerSlideshow = () => {
           />
           <div className="absolute inset-x-0 bottom-0 pb-8 flex flex-col items-center text-center">
             <h3 className="text-2xl font-light text-white mb-2 drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] text-shadow-lg">DÉP LACOSTE CHÍNH HÃNG</h3>
-            <Link to="/category" className="font-medium bg-black text-white px-6 py-2 text-sm hover:bg-white hover:text-black transition-colors duration-300 cursor-pointer">
+            <Link to="/all-products" className="font-medium bg-black text-white px-6 py-2 text-sm hover:bg-white hover:text-black transition-colors duration-300 cursor-pointer">
               XEM CHI TIẾT
             </Link>
           </div>
@@ -147,7 +147,7 @@ const SummerSlideshow = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Summer Clothes Banner */}
-        <Link to="/category" className="relative group overflow-hidden">
+        <Link to="/all-products" className="relative group overflow-hidden">
           <img 
             src="https://pos.nvncdn.com/8ca22b-20641/bn/20250312_V1uUTgHQ.gif"
             alt="Áo Hè Chính Hãng" 
@@ -155,14 +155,14 @@ const SummerSlideshow = () => {
           />
           <div className="absolute inset-x-0 bottom-0 pb-8 flex flex-col items-center text-center">
             <h3 className="text-2xl font-light text-white mb-2 drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] text-shadow-lg">ÁO HÈ CHÍNH HÃNG</h3>
-            <Link to="/category" className="font-medium bg-black text-white px-6 py-2 text-sm hover:bg-white hover:text-black transition-colors duration-300 cursor-pointer">
+            <Link to="/all-products" className="font-medium bg-black text-white px-6 py-2 text-sm hover:bg-white hover:text-black transition-colors duration-300 cursor-pointer">
               XEM CHI TIẾT
             </Link>
           </div>
         </Link>
 
         {/* Sports Shoes Banner */}
-        <Link to="/category" className="relative group overflow-hidden">
+        <Link to="/all-products" className="relative group overflow-hidden">
           <img 
             src="https://pos.nvncdn.com/8ca22b-20641/bn/20250312_gZQIzDv8.gif"
             alt="Giày Thể Thao" 
@@ -170,7 +170,7 @@ const SummerSlideshow = () => {
           />
           <div className="absolute inset-x-0 bottom-0 pb-8 flex flex-col items-center text-center">
             <h3 className="text-2xl font-light text-white mb-2 drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] text-shadow-lg">GIÀY THỂ THAO</h3>
-            <Link to="/category" className="font-medium bg-black text-white px-6 py-2 text-sm hover:bg-white hover:text-black transition-colors duration-300 cursor-pointer">
+            <Link to="/all-products" className="font-medium bg-black text-white px-6 py-2 text-sm hover:bg-white hover:text-black transition-colors duration-300 cursor-pointer">
               XEM CHI TIẾT
             </Link>
           </div>

@@ -14,6 +14,9 @@ import StoreSystem from './pages/StoreSystem'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import Order from './pages/Order'
+import VnpayReturn from './pages/VnpayReturn'
+import AdminLayout from './pages/admin/AdminLayout'
+import AllProducts from "./pages/AllProducts"
 
 // Layout components
 import Header from "./components/home/Header"
@@ -71,12 +74,12 @@ const App = () => {
 
         {/* All Products Route */}
         <Route
-          path="/category"
+          path="/all-products"
           element={
             <>
               <Header />
               <MainMenu />
-              <CategoryProducts />
+              <AllProducts />
               <Footer />
             </>
           }
@@ -172,6 +175,12 @@ const App = () => {
             </>
           }
         />
+
+        {/* Vnpay Return Route */}
+        <Route path="/payment/vnpay-return" element={<VnpayReturn />} />
+
+        {/* Admin Route */}
+        <Route path="/admin/*" element={<AdminLayout />} />
 
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/" replace />} />

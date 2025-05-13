@@ -16,6 +16,7 @@ const NewItemsOnSale = () => {
     const [wishlistItems, setWishlistItems] = useState([]);
     const [userInfo, setUserInfo] = useState(null);
     const [loadingStates, setLoadingStates] = useState({});
+    const PAGE_SIZE = 8;
 
     // Format price with commas in VND
     const formatPrice = (price) => {
@@ -53,8 +54,24 @@ const NewItemsOnSale = () => {
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            const response = await callHomeProduct(currentPage, 8);
-            setProducts(response.data.data);
+            let page = 0;
+            let result = [];
+            let stop = false;
+            while (result.length < PAGE_SIZE && !stop) {
+                const response = await callHomeProduct(page, PAGE_SIZE);
+                const fetched = response.data.data || [];
+                // Lọc sản phẩm chưa bị xóa
+                const filtered = fetched.filter(p => !p.isDeleted);
+                // Thêm vào result, nhưng không trùng lặp
+                filtered.forEach(p => {
+                    if (!result.some(item => item.productId === p.productId)) {
+                        result.push(p);
+                    }
+                });
+                if (fetched.length < PAGE_SIZE) stop = true; // Không còn sản phẩm để lấy nữa
+                page++;
+            }
+            setProducts(result.slice(0, PAGE_SIZE));
         } catch (error) {
             console.error("Error fetching products:", error);
         } finally {

@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom"
 import { Eye, EyeOff } from "lucide-react"
 import loginImage from "../assets/images/login.jpg"
 import logo from "../assets/images/logo.jpg"
-import customizeAxios from "../services/customizeAxios"
 import { toast } from "sonner"
 import authService from "../services/auth.services"
 
@@ -12,6 +11,7 @@ const Register = () => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
+    userEmail: "",
     password: "",
     confirmPassword: "",
     acceptTerms: false,
@@ -46,7 +46,13 @@ const Register = () => {
 
     if (!formData.email) {
       newErrors.email = "Username không được để trống"
-    } 
+    }
+
+    if (!formData.userEmail) {
+      newErrors.userEmail = "Email không được để trống";
+    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.userEmail)) {
+      newErrors.userEmail = "Email không hợp lệ";
+    }
 
     if (!formData.password) {
       newErrors.password = "Mật khẩu không được để trống"
@@ -80,9 +86,10 @@ const Register = () => {
       const response = await authService.register({
         fullName: formData.fullName,
         username: formData.email,
+        email: formData.userEmail,
         password: formData.password,
       })
-
+      console.log(response)
       if (response.data) {
         toast.success("Đăng ký thành công!", {
           description: "Vui lòng đăng nhập để tiếp tục."
@@ -92,14 +99,18 @@ const Register = () => {
     } catch (error) {
       console.error("Registration error:", error)
 
-      if (error.response && error.response.status === 409) {
+      if (error.response && (error.response.status === 409 || error.response.status === 400)) {
+        const msg = error.request.response || "";
         toast.error("Đăng ký thất bại", {
-          description: "Username đã được sử dụng. Vui lòng sử dụng username khác."
-        })
-        setErrors({
-          ...errors,
-          email: "Username đã được sử dụng",
-        })
+          description: msg || "Đã xảy ra lỗi khi đăng ký."
+        });
+        if (msg.toLowerCase().includes('email')) {
+          setErrors({ ...errors, userEmail: msg });
+        } else if (msg.toLowerCase().includes('username')) {
+          setErrors({ ...errors, email: msg });
+        } else {
+          setErrors({ ...errors });
+        }
       } else {
         toast.error("Lỗi", {
           description: "Đã xảy ra lỗi khi đăng ký. Vui lòng thử lại sau."
@@ -167,6 +178,21 @@ const Register = () => {
                   }`}
                 />
                 {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="userEmail" className="text-sm font-medium">Email</label>
+                <input
+                  id="userEmail"
+                  name="userEmail"
+                  placeholder="example@email.com"
+                  value={formData.userEmail}
+                  onChange={handleChange}
+                  className={`flex h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.userEmail ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+                {errors.userEmail && <p className="text-red-500 text-sm">{errors.userEmail}</p>}
               </div>
 
               <div className="space-y-2">

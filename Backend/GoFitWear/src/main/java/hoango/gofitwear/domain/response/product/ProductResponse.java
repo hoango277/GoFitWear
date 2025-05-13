@@ -20,4 +20,5 @@ public class ProductResponse {
     private BigDecimal price;
     private String imageUrl;
     private Instant createdAt;
+    private Boolean isDeleted;
 }

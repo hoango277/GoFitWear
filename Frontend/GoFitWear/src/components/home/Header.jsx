@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from 'react';
 import authService from "../../services/auth.services";
 import { fetchWishlist, removeFromWishlist } from "../../services/api";
 import { UserOutlined, HeartOutlined, ShoppingCartOutlined, LogoutOutlined, EnvironmentOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import customizeAxios from '../../services/customizeAxios'
 
 const Header = () => {
     const { Search } = Input;
@@ -20,7 +20,7 @@ const Header = () => {
     const [loadingWishlist, setLoadingWishlist] = useState(false);
     const [cartItems, setCartItems] = useState([]);
     const [loadingCart, setLoadingCart] = useState(false);
-    const [cartVisible, setCartVisible] = useState(false);
+    const [searchValue, setSearchValue] = useState("");
     
     // Function to fetch user's wishlist - defined as useCallback to avoid recreating it
     const fetchUserWishlist = useCallback(async (userId) => {
@@ -32,10 +32,10 @@ const Header = () => {
             const response = await fetchWishlist(userId);
             
             if (response && response.statusCode === 200) {
-                const total = response.data.meta.total || 0;
                 const items = response.data.data || [];
-                setWishlistCount(total);
-                setWishlistItems(items);
+                const filtered = items.filter(item => !item.product.isDeleted);
+                setWishlistCount(filtered.length);
+                setWishlistItems(filtered);
             }
         } catch (error) {
             console.error("Failed to fetch wishlist:", error);
@@ -52,17 +52,12 @@ const Header = () => {
         
         try {
             setLoadingCart(true);
-            const userStorage = JSON.parse(localStorage.getItem("user"));
-            const response = await axios.get(`http://localhost:8080/api/users/${userId}/cart`
-            //     , {
-            //     headers: {
-            //         'Authorization': `Bearer ${userStorage.token}`
-            //     }
-            // }
+            const response = await customizeAxios.get(`/api/users/${userId}/cart`
         );
-            console.log(response);
-            if (response.data.statusCode === 200) {
-                setCartItems(response.data.data.cartItems || []);
+            if (response.statusCode === 200) {
+                const items = response.data.cartItems || [];
+                const filtered = items.filter(item => !item.variant.product.isDeleted);
+                setCartItems(filtered);
             }
         } catch (error) {
             console.error('Error fetching cart:', error);
@@ -246,7 +241,7 @@ const Header = () => {
         if (!userInfo?.id) return;
         
         try {
-            await axios.delete(`http://localhost:8080/api/users/${userInfo.id}/cart/items/${cartItemId}`);
+            await customizeAxios.delete(`/api/users/${userInfo.id}/cart/items/${cartItemId}`);
             
             // Update local state to reflect the removed item
             setCartItems(cartItems.filter(item => item.cartItemId !== cartItemId));
@@ -280,11 +275,11 @@ const Header = () => {
         try {
             if (newQuantity <= 0) {
                 // If quantity is 0 or less, delete the item
-                await axios.delete(`http://localhost:8080/api/users/${userInfo.id}/cart/items/${cartItemId}`);
+                await customizeAxios.delete(`/api/users/${userInfo.id}/cart/items/${cartItemId}`);
                 message.success("Đã xóa sản phẩm khỏi giỏ hàng");
             } else {
                 // Update quantity
-                await axios.put(`http://localhost:8080/api/users/${userInfo.id}/cart/items/${cartItemId}`, {
+                await customizeAxios.put(`/api/users/${userInfo.id}/cart/items/${cartItemId}`, {
                     variantId: variantId,
                     quantity: newQuantity
                 });
@@ -299,6 +294,15 @@ const Header = () => {
         } catch (error) {
             console.error("Failed to update cart:", error);
             message.error("Không thể cập nhật giỏ hàng");
+        }
+    };
+
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        if (searchValue.trim() !== "") {
+            navigate(`/all-products?search=${encodeURIComponent(searchValue.trim())}`);
+        } else {
+            navigate(`/all-products`);
         }
     };
 
@@ -532,14 +536,18 @@ const Header = () => {
                 {!isScrolled && (
                     <div className="relative flex-grow max-w-md mx-4 transition-all duration-300">
                         <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="Bạn muốn tìm gì?"
-                                className="w-full py-2 pl-4 pr-10 text-sm border-1 border-gray-300 rounded-full focus:outline-none focus:border-black transition-all duration-300 hover:border-gray-300"
-                            />
-                            <button className="absolute right-0 top-0 h-full px-4 flex items-center justify-center text-gray-400 hover:text-black transition-colors duration-300">
-                                <FiSearch className="w-4 h-4" />
-                            </button>
+                            <form onSubmit={handleSearchSubmit}>
+                                <input
+                                    type="text"
+                                    placeholder="Bạn muốn tìm gì?"
+                                    className="w-full py-2 pl-4 pr-10 text-sm border-1 border-gray-300 rounded-full focus:outline-none focus:border-black transition-all duration-300 hover:border-gray-300"
+                                    value={searchValue}
+                                    onChange={e => setSearchValue(e.target.value)}
+                                />
+                                <button type="submit" className="absolute right-0 top-0 h-full px-4 flex items-center justify-center text-gray-400 hover:text-black transition-colors duration-300">
+                                    <FiSearch className="w-4 h-4" />
+                                </button>
+                            </form>
                         </div>
                     </div>
                 )}

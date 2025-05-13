@@ -90,4 +90,14 @@ public class ProductController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    @PutMapping("/turn-on/{id}")
+    public ResponseEntity<Void> turnOnProduct(@PathVariable Long id) {
+        boolean deleted = productService.turnOn(id);
+
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 }

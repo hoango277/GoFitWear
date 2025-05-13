@@ -62,6 +62,7 @@ public class OrderController {
             OrderResponse createdOrder = orderService.createOrderFromCart(userId, checkoutRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
         } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }

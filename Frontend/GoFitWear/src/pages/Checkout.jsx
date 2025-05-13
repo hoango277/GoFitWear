@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
-import axios from 'axios';
+import customizeAxios from '../services/customizeAxios';
 import './checkout/checkout.css'; // Import CSS cho radio buttons tùy chỉnh
 
 const Checkout = () => {
@@ -57,7 +57,8 @@ const Checkout = () => {
 
     const fetchUserProfile = async (userId) => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/users/${userId}/profile`);
+            const response = await customizeAxios.get(`/api/users/${userId}/profile`);
+            console.log(response);
             if (response.data.statusCode === 200) {
                 const userProfile = response.data.data;
                 
@@ -141,9 +142,9 @@ const Checkout = () => {
             };
 
             // Gọi API mới
-            const response = await axios.post(`http://localhost:8080/api/users/${userInfo.userId}/checkout`, checkoutData);
-            
-            if (response.data.statusCode === 201) {
+            const response = await customizeAxios.post(`/api/users/${userInfo.userId}/checkout`, checkoutData);
+            console.log(response);
+            if (response.statusCode === 201) {
                 message.success("Đặt hàng thành công!");
                 // Xóa dữ liệu thanh toán từ localStorage
                 localStorage.removeItem('checkoutItems');
@@ -269,7 +270,7 @@ const Checkout = () => {
                                 />
                                 <span className="ml-2">Thanh toán khi nhận hàng</span>
                             </label>
-                            <label className="flex items-center py-2 cursor-pointer">
+                            {/* <label className="flex items-center py-2 cursor-pointer">
                                 <input
                                     type="radio"
                                     name="paymentMethod"
@@ -279,18 +280,7 @@ const Checkout = () => {
                                     className="custom-radio"
                                 />
                                 <span className="ml-2">Chuyển khoản ngân hàng</span>
-                            </label>
-                            <label className="flex items-center py-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="paymentMethod"
-                                    value="MOMO"
-                                    checked={formData.paymentMethod === "MOMO"}
-                                    onChange={handleRadioChange}
-                                    className="custom-radio"
-                                />
-                                <span className="ml-2">Ví MoMo</span>
-                            </label>
+                            </label> */}
                             <label className="flex items-center py-2 cursor-pointer">
                                 <input
                                     type="radio"
@@ -300,7 +290,7 @@ const Checkout = () => {
                                     onChange={handleRadioChange}
                                     className="custom-radio"
                                 />
-                                <span className="ml-2">VNPay</span>
+                                <span className="ml-2">Thanh toán với VNPAY</span>
                             </label>
                         </div>
                     </div>

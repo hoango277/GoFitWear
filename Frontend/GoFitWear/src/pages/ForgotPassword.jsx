@@ -35,7 +35,11 @@ const ForgotPassword = () => {
     setLoading(true)
 
     try {
-      const response = await customizeAxios.post("/auth/forgot-password", { email })
+      const response = await customizeAxios.post("/auth/forgot-password", {
+        email: email
+      }, {
+        headers: { 'Content-Type': 'application/json' }
+      })
 
       if (response.data) {
         setSubmitted(true)
@@ -46,8 +50,8 @@ const ForgotPassword = () => {
     } catch (error) {
       console.error("Forgot password error:", error)
 
-      if (error.response && error.response.status === 404) {
-        setError("Email không tồn tại trong hệ thống")
+      if (error.response && error.response.status === 400) {
+        setError(error.response.data || "Email không tồn tại trong hệ thống")
       } else {
         toast.error("Lỗi", {
           description: "Đã xảy ra lỗi. Vui lòng thử lại sau."

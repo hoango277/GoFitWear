@@ -2,13 +2,13 @@ import axios from "axios"
 import { message } from 'antd'
 
 const instance = axios.create({
-    baseURL: 'http://localhost:8080',
+    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
     headers: {
         'Content-Type': 'application/json'
     }
 })
 
-// Add request interceptor to include auth token
+
 instance.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('access_token')

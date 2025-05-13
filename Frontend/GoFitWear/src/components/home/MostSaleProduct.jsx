@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Spin } from 'antd';
-import { callHomeProduct, mostSaleProduct } from '../../services/api';
+import { mostSaleProduct } from '../../services/api';
 import ProductCard from '../ProductCard';
 import { HeartIcon as HeartOutline } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 import { message } from 'antd';
 import { addToWishlist, removeFromWishlist, fetchWishlist } from '../../services/api';
 
+const PAGE_SIZE = 8;
+
 const MostSaleProduct = () => {
-    const [currentPage, setCurrentPage] = useState(0);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [hoveredProduct, setHoveredProduct] = useState(null);
@@ -48,13 +49,29 @@ const MostSaleProduct = () => {
     // Fetch products when component mounts or page changes
     useEffect(() => {
         fetchProducts();
-    }, [currentPage]);
+    }, []);
 
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            const response = await mostSaleProduct(1, 8);
-            setProducts(response.data.data);
+            let page = 0;
+            let result = [];
+            let stop = false;
+            while (result.length < PAGE_SIZE && !stop) {
+                const response = await mostSaleProduct(page, PAGE_SIZE);
+                const fetched = response.data.data || [];
+                // Lọc sản phẩm chưa bị xóa
+                const filtered = fetched.filter(p => !p.isDeleted);
+                // Thêm vào result, nhưng không trùng lặp
+                filtered.forEach(p => {
+                    if (!result.some(item => item.productId === p.productId)) {
+                        result.push(p);
+                    }
+                });
+                if (fetched.length < PAGE_SIZE) stop = true; // Không còn sản phẩm để lấy nữa
+                page++;
+            }
+            setProducts(result.slice(0, PAGE_SIZE));
         } catch (error) {
             console.error("Error fetching products:", error);
         } finally {

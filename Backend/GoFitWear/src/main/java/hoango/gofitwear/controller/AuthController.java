@@ -4,6 +4,8 @@ import hoango.gofitwear.configuration.JwtConfig;
 import hoango.gofitwear.domain.User;
 import hoango.gofitwear.domain.request.auth.LoginDTO;
 import hoango.gofitwear.domain.request.auth.RegisterDTO;
+import hoango.gofitwear.domain.request.user.PasswordChangeRequest;
+import hoango.gofitwear.domain.request.user.ResetPassword;
 import hoango.gofitwear.domain.response.auth.ResLogin;
 import hoango.gofitwear.domain.response.auth.ResRegister;
 import hoango.gofitwear.service.UserService;
@@ -16,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -43,46 +47,57 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ResLogin> login(@RequestBody LoginDTO login) {
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                login.getUsername(),
-                login.getPassword()
-        );
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(usernamePasswordAuthenticationToken);
+        try{
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                    login.getUsername(),
+                    login.getPassword()
+            );
+            Authentication authentication = authenticationManagerBuilder.getObject().authenticate(usernamePasswordAuthenticationToken);
+
+
+            ResLogin resLogin = new ResLogin();
+            User currentUser = userService.findByUsername(login.getUsername());
+            ResLogin.UserLogin userLogin = modelMapper.map(currentUser, ResLogin.UserLogin.class);
+
+            resLogin.setUser(userLogin);
+            String accessToken =  jwtUtil.createAccessToken(currentUser.getUsername(), resLogin);
+            resLogin.setAccessToken(accessToken);
 
 
 
-        ResLogin resLogin = new ResLogin();
-        User currentUser = userService.findByUsername(login.getUsername());
-        ResLogin.UserLogin userLogin = modelMapper.map(currentUser, ResLogin.UserLogin.class);
+            String refreshToken = jwtUtil.createRefreshToken(login.getUsername(), resLogin);
+            userService.setUserRefreshToken(refreshToken, currentUser);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        resLogin.setUser(userLogin);
-        String accessToken =  jwtUtil.createAccessToken(currentUser.getUsername(), resLogin);
-        resLogin.setAccessToken(accessToken);
-
-
-
-        String refreshToken = jwtUtil.createRefreshToken(login.getUsername(), resLogin);
-        userService.setUserRefreshToken(refreshToken, currentUser);
-
-        ResponseCookie responseCookie = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .path("/")
-                .maxAge(jwtConfig.getRefreshTokenExpirationSecond())
-                .build();
-        return ResponseEntity.status(HttpStatus.OK)
-                .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
-                .body(resLogin);
+            ResponseCookie responseCookie = ResponseCookie.from("refreshToken", refreshToken)
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(jwtConfig.getRefreshTokenExpirationSecond())
+                    .build();
+            return ResponseEntity.status(HttpStatus.OK)
+                    .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
+                    .body(resLogin);
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ResRegister> register(@RequestBody RegisterDTO registerDTO) {
-        User user = userService.register(registerDTO);
-        ResRegister resRegister = new ResRegister();
-        resRegister.setFullName(user.getFullName());
-        resRegister.setUsername(user.getUsername());
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                resRegister
-        );
+    public ResponseEntity<?> register(@RequestBody RegisterDTO registerDTO) {
+        try{
+            User user = userService.register(registerDTO);
+            ResRegister resRegister = new ResRegister();
+            resRegister.setFullName(user.getFullName());
+            resRegister.setUsername(user.getUsername());
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    resRegister );
+        }
+        catch (Exception e)
+        {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+
     }
 
     @GetMapping("/refresh")
@@ -115,5 +130,15 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK)
                 .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
                 .body(resLogin);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ResetPassword passwordChangeRequest) {
+        try{
+            userService.resetPasswordAndSendEmail(passwordChangeRequest.getEmail());
+            return ResponseEntity.ok("Đã gửi email tới tài khoản của bạn");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 }

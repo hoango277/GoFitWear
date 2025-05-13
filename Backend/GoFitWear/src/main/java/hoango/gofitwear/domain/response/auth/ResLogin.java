@@ -48,6 +48,7 @@ public class ResLogin {
         private Long id;
         private String username;
         private String name;
+        private User.UserRole role;
     }
 
 }

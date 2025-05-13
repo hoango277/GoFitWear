@@ -114,7 +114,18 @@ public class ProductService {
 
     public boolean deleteProduct(Long id) {
         if (productRepository.existsById(id)) {
-            productRepository.deleteById(id);
+            Product product = productRepository.findById(id).get();
+            product.setIsDeleted(true);
+            productRepository.save(product);
+            return true;
+        }
+        return false;
+    }
+    public boolean turnOn(Long id) {
+        if (productRepository.existsById(id)) {
+            Product product = productRepository.findById(id).get();
+            product.setIsDeleted(false);
+            productRepository.save(product);
             return true;
         }
         return false;

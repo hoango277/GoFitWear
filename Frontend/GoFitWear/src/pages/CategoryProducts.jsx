@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import customizeAxios from '../services/customizeAxios';
 import { Pagination, Spin, Empty, Card, Row, Col, Select, Checkbox, Collapse, Button, Divider, Input } from 'antd';
 import { FiFilter } from 'react-icons/fi';
 import ProductCard from '../components/ProductCard';
@@ -19,16 +19,13 @@ const CategoryProducts = () => {
   const [pageSize, setPageSize] = useState(8);
   const [sortBy, setSortBy] = useState('newest');
   const [categoryName, setCategoryName] = useState('');
-  const [subcategoryName, setSubcategoryName] = useState('');
-  const [parentCategory, setParentCategory] = useState(null);
   
   // Filter states
   const [brands, setBrands] = useState([]);
-  const [subcategories, setSubcategories] = useState([]);
   const [maxPrice, setMaxPrice] = useState(5000000);
   const [selectedBrands, setSelectedBrands] = useState([]);
-  const [selectedSubcategories, setSelectedSubcategories] = useState([]);
   const [selectedPriceRange, setSelectedPriceRange] = useState([0, 5000000]);
+  const [selectedSubcategories, setSelectedSubcategories] = useState([]);
   
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
   
@@ -42,6 +39,7 @@ const CategoryProducts = () => {
   
   // Store all relevant category IDs (main category + subcategories)
   const [allCategoryIds, setAllCategoryIds] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
 
   // Parse URL search params for initial values
   useEffect(() => {
@@ -59,48 +57,67 @@ const CategoryProducts = () => {
     }
   }, [location.search]);
   
-  // Fetch category names and subcategories
+  // Fetch all categories dropdown and build tree
   useEffect(() => {
-    const fetchCategoryData = async () => {
+    const fetchAllCategories = async () => {
       try {
-        if (subcategoryId) {
-          // If we have a subcategory, fetch its details
-          const subcategoryResponse = await axios.get(`http://localhost:8080/api/categories/${subcategoryId}`);
-          if (subcategoryResponse.data && subcategoryResponse.data.data) {
-            const subcategory = subcategoryResponse.data.data;
-            setSubcategoryName(subcategory.name || '');
-            setAllCategoryIds([subcategoryId]); // Only include this subcategory
-            
-            // Also fetch parent category details if available
-            if (subcategory.parent) {
-              setParentCategory(subcategory.parent);
-              setCategoryName(subcategory.parent.name || '');
-            }
-          }
-        } else if (categoryId) {
-          // If we only have the main category, fetch its details and subcategories
-          const categoryResponse = await axios.get(`http://localhost:8080/api/categories/${categoryId}`);
-          if (categoryResponse.data && categoryResponse.data.data) {
-            const category = categoryResponse.data.data;
-            setCategoryName(category.name || '');
-            
-            // Extract subcategories from the response
-            const subs = category.subcategories || [];
-            setSubcategories(subs);
-            
-            // Collect all category IDs (main + subcategories)
-            const categoryIds = [parseInt(categoryId)];
-            subs.forEach(sub => categoryIds.push(sub.categoryId));
-            setAllCategoryIds(categoryIds);
-          }
+        const response = await customizeAxios.get('/api/categories/dropdown');
+        if (response && response.data) {
+          setAllCategories(response.data);
         }
       } catch (error) {
-        console.error('Error fetching category details:', error);
+        console.error('Error fetching all categories:', error);
       }
     };
+    fetchAllCategories();
+  }, []);
 
-    fetchCategoryData();
-  }, [categoryId, subcategoryId]);
+  // Lấy tất cả categoryId con (mọi cấp) của một categoryId
+  const getAllSubcategoryIds = (catId, categories) => {
+    let result = [];
+    const directSubs = categories.filter(cat => cat.parent && cat.parent.categoryId === Number(catId));
+    directSubs.forEach(sub => {
+      result.push(sub.categoryId);
+      result = result.concat(getAllSubcategoryIds(sub.categoryId, categories));
+    });
+    return result;
+  };
+
+  // Fetch category names and subcategories
+  useEffect(() => {
+    if (!categoryId) return;
+    const currentCat = allCategories.find(cat => cat.categoryId === Number(categoryId));
+    setCategoryName(currentCat ? currentCat.name : '');
+    // Build allCategoryIds (categoryId + tất cả subcategories mọi cấp)
+    const categoryIds = [Number(categoryId), ...getAllSubcategoryIds(categoryId, allCategories)];
+    setAllCategoryIds(categoryIds);
+  }, [categoryId, allCategories]);
+
+  // Build flat list of all subcategories (all levels) for filter
+  const flatSubcategoryList = (() => {
+    if (!categoryId) return [];
+    const ids = getAllSubcategoryIds(categoryId, allCategories);
+    return allCategories.filter(cat => ids.includes(cat.categoryId));
+  })();
+
+  // Render flat filter
+  const renderFlatSubcategoryFilter = () => (
+    <Checkbox.Group
+      value={selectedSubcategories}
+      onChange={vals => {
+        setSelectedSubcategories(vals);
+        setCurrentPage(0);
+        setFiltersChanged(true);
+      }}
+      className="flex flex-col gap-2"
+    >
+      {flatSubcategoryList.map(sub => (
+        <Checkbox key={sub.categoryId} value={sub.categoryId}>
+          {sub.name}
+        </Checkbox>
+      ))}
+    </Checkbox.Group>
+  );
 
   // Function to build filter string
   const buildFilterString = () => {
@@ -159,83 +176,78 @@ const CategoryProducts = () => {
   // Function to fetch products
   const fetchProducts = async (isInitialLoad = false) => {
     if (!categoryId && !subcategoryId) return;
-    
     setLoading(true);
     try {
       // Build sort parameter based on selection
       let sort = '';
       switch (sortBy) {
-        case 'price-asc':
-          sort = 'price,asc';
-          break;
-        case 'price-desc':
-          sort = 'price,desc';
-          break;
-        case 'name-asc':
-          sort = 'name,asc';
-          break;
-        case 'name-desc':
-          sort = 'name,desc';
-          break;
-        default:
-          sort = 'createdAt,desc'; // newest first
+        case 'price-asc': sort = 'price,asc'; break;
+        case 'price-desc': sort = 'price,desc'; break;
+        case 'name-asc': sort = 'name,asc'; break;
+        case 'name-desc': sort = 'name,desc'; break;
+        default: sort = 'createdAt,desc';
       }
-
       // Build filter string
       const filterString = buildFilterString();
-      console.log("Filter string:", filterString);
-
-      // Fetch products with filters
-      const response = await axios.get(`http://localhost:8080/api/products`, {
-        params: {
-          filter: filterString,
-          page: currentPage,
-          size: pageSize,
-          sort
-        }
-      });
-
-      if (response.data && response.data.statusCode === 200) {
-        const productsData = response.data.data.data || [];
-        setProducts(productsData);
-        setTotalItems(response.data.data.meta.total || 0);
+      let page = currentPage;
+      let result = [];
+      let stop = false;
+      while (result.length < pageSize && !stop) {
+        const response = await customizeAxios.get(`/api/products`, {
+          params: {
+            filter: filterString,
+            page,
+            size: pageSize,
+            sort
+          }
+        });
+        const productsData = response.data.data || [];
+        // Lọc bỏ sản phẩm bị ẩn
+        const filtered = productsData.filter(p => !p.isDeleted);
+        filtered.forEach(p => {
+          if (!result.some(item => item.productId === p.productId)) {
+            result.push(p);
+          }
+        });
+        if (productsData.length < pageSize) stop = true;
+        page++;
+      }
+      setProducts(result.slice(0, pageSize));
+      setTotalItems(result.length); // hoặc response.data.meta.total nếu muốn tổng thực tế
+      
+      // Only extract brands and max price from initial load
+      if (isInitialLoad || brands.length === 0) {
+        // Extract unique brands from products
+        const uniqueBrands = [];
+        const brandMap = {};
+        result.forEach(product => {
+          if (product.brand && !brandMap[product.brand.brandId]) {
+            brandMap[product.brand.brandId] = true;
+            uniqueBrands.push(product.brand);
+          }
+        });
+        setBrands(uniqueBrands);
         
-        // Only extract brands and max price from initial load
-        if (isInitialLoad || brands.length === 0) {
-          // Extract unique brands from products
-          const uniqueBrands = [];
-          const brandMap = {};
+        // Find max price for slider
+        if (result.length > 0) {
+          const maxProductPrice = Math.max(...result.map(p => p.price || 0));
+          // Round up to the nearest 100,000 for a cleaner max price
+          const roundedMaxPrice = Math.ceil(maxProductPrice / 100000) * 100000;
           
-          productsData.forEach(product => {
-            if (product.brand && !brandMap[product.brand.brandId]) {
-              brandMap[product.brand.brandId] = true;
-              uniqueBrands.push(product.brand);
-            }
-          });
-          
-          setBrands(uniqueBrands);
-          
-          // Find max price for slider
-          if (productsData.length > 0) {
-            const maxProductPrice = Math.max(...productsData.map(p => p.price || 0));
-            // Round up to the nearest 100,000 for a cleaner max price
-            const roundedMaxPrice = Math.ceil(maxProductPrice / 100000) * 100000;
+          if (!initialDataLoaded.current) {
+            const newMaxPrice = roundedMaxPrice > 0 ? roundedMaxPrice : 5000000;
+            setMaxPrice(newMaxPrice);
+            setSelectedPriceRange([0, newMaxPrice]);
             
-            if (!initialDataLoaded.current) {
-              const newMaxPrice = roundedMaxPrice > 0 ? roundedMaxPrice : 5000000;
-              setMaxPrice(newMaxPrice);
-              setSelectedPriceRange([0, newMaxPrice]);
-              
-              // Set the input values if they aren't already set from URL params
-              if (minPriceInputRef.current && !minPriceInputRef.current.input.value) {
-                minPriceInputRef.current.input.value = "0";
-              }
-              if (maxPriceInputRef.current && !maxPriceInputRef.current.input.value) {
-                maxPriceInputRef.current.input.value = newMaxPrice.toString();
-              }
-              
-              initialDataLoaded.current = true;
+            // Set the input values if they aren't already set from URL params
+            if (minPriceInputRef.current && !minPriceInputRef.current.input.value) {
+              minPriceInputRef.current.input.value = "0";
             }
+            if (maxPriceInputRef.current && !maxPriceInputRef.current.input.value) {
+              maxPriceInputRef.current.input.value = newMaxPrice.toString();
+            }
+            
+            initialDataLoaded.current = true;
           }
         }
       }
@@ -280,12 +292,6 @@ const CategoryProducts = () => {
 
   const handleBrandChange = (checkedValues) => {
     setSelectedBrands(checkedValues);
-    setCurrentPage(0); // Reset to first page on filter change
-    setFiltersChanged(true);
-  };
-
-  const handleSubcategoryChange = (checkedValues) => {
-    setSelectedSubcategories(checkedValues);
     setCurrentPage(0); // Reset to first page on filter change
     setFiltersChanged(true);
   };
@@ -366,17 +372,9 @@ const CategoryProducts = () => {
 
       <Collapse defaultActiveKey={['1', '2', '3']} ghost>
         {/* Subcategory filter - only show if we're on a top-level category */}
-        {!subcategoryId && subcategories.length > 0 && (
+        {!subcategoryId && flatSubcategoryList.length > 0 && (
           <Panel header={<span className="font-medium">DANH MỤC</span>} key="1">
-            <Checkbox.Group 
-              options={subcategories.map(sub => ({ 
-                label: sub.name, 
-                value: sub.categoryId 
-              }))}
-              value={selectedSubcategories}
-              onChange={handleSubcategoryChange}
-              className="flex flex-col gap-2"
-            />
+            {renderFlatSubcategoryFilter()}
           </Panel>
         )}
 
@@ -441,13 +439,13 @@ const CategoryProducts = () => {
         <Link to="/" className="text-gray-500 hover:text-black">Trang chủ</Link>
         <span className="mx-2">/</span>
         
-        {subcategoryId && parentCategory ? (
+        {subcategoryId && categoryName ? (
           <>
-            <Link to={`/category/${parentCategory.categoryId}`} className="text-gray-500 hover:text-black">
+            <Link to={`/category/${categoryId}`} className="text-gray-500 hover:text-black">
               {categoryName?.toUpperCase()}
             </Link>
             <span className="mx-2">/</span>
-            <span className="font-medium">{subcategoryName?.toUpperCase()}</span>
+            <span className="font-medium">{categoryName?.toUpperCase()}</span>
           </>
         ) : (
           <span className="font-medium">{categoryName?.toUpperCase() || 'Sản phẩm'}</span>
@@ -456,7 +454,7 @@ const CategoryProducts = () => {
 
       <div className="flex flex-col items-center mt-4.5 mb-8">
         <h1 className="text-3xl font-extralight">
-          {subcategoryId ? subcategoryName?.toUpperCase() : categoryName?.toUpperCase() || 'SẢN PHẨM'}
+          {subcategoryId ? categoryName?.toUpperCase() : categoryName?.toUpperCase() || 'SẢN PHẨM'}
         </h1>
         <span className="text-gray-700 mb-2">{totalItems} sản phẩm</span>
       </div>

@@ -1,68 +1,83 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiChevronRight } from 'react-icons/fi';
-import axios from 'axios';
+import customizeAxios from '../../services/customizeAxios';
 import './MainMenu.css';
 
 const MainMenu = () => {
   const [activeCategory, setActiveCategory] = useState(null);
-  const [categories, setCategories] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        setLoading(true);
-        // Fetch top-level categories
-        const topLevelResponse = await axios.get('http://localhost:8080/api/categories/top-level');
-        
         // Fetch all categories for dropdown data
-        const allCategoriesResponse = await axios.get('http://localhost:8080/api/categories/dropdown');
-        
-        if (topLevelResponse.data.statusCode === 200 && allCategoriesResponse.data.statusCode === 200) {
-          setCategories(topLevelResponse.data.data);
-          setAllCategories(allCategoriesResponse.data.data);
+        const allCategoriesResponse = await customizeAxios.get('/api/categories/dropdown');
+        if (allCategoriesResponse.statusCode === 200) {
+          setAllCategories(allCategoriesResponse.data);
         }
       } catch (error) {
         console.error('Error fetching categories:', error);
-      } finally {
-        setLoading(false);
       }
     };
-
     fetchCategories();
   }, []);
 
-  const handleMouseEnter = (categoryId) => {
-    setActiveCategory(categoryId);
+  // Build tree from flat list
+  const buildCategoryTree = (categories, parentId = null) => {
+    return categories
+      .filter(cat => (cat.parent ? cat.parent.categoryId : null) === parentId)
+      .map(cat => ({
+        ...cat,
+        children: buildCategoryTree(categories, cat.categoryId)
+      }));
   };
 
-  const handleMouseLeave = () => {
-    setActiveCategory(null);
-  };
+  const categoryTree = buildCategoryTree(allCategories);
+  const topLevelCategories = categoryTree;
 
-  // Get subcategories for a parent category
-  const getSubcategories = (parentId) => {
-    return allCategories.filter(category => 
-      category.parent && category.parent.categoryId === parentId
-    );
-  };
-
-  // If loading, you can return a loading indicator or null
-  if (loading) {
-    return <div className="loading-menu">Loading menu...</div>;
-  }
+  // Render subcategories as columns (UI cũ)
+  const renderSubcategoryColumns = (subcategories, parentId) => (
+    <div className="subcategories-inner">
+      {subcategories.map(sub => (
+        <div key={sub.categoryId} className="subcategory-column">
+          <Link to={`/category/${parentId}/${sub.categoryId}`} className="subcategory-title">
+            {sub.name.toUpperCase()}
+          </Link>
+          {/* Nếu sub có children, render tiếp bên dưới */}
+          {sub.children && sub.children.length > 0 && (
+            <ul className="brands-list">
+              {sub.children.map(child => (
+                <li key={child.categoryId}>
+                  <Link to={`/category/${parentId}/${child.categoryId}`}>{child.name}</Link>
+                </li>
+              ))}
+              <li>
+                <Link to={`/category/${parentId}`} className="view-all">Xem tất cả</Link>
+              </li>
+            </ul>
+          )}
+          {/* Nếu không có children, chỉ hiện Xem tất cả */}
+          {(!sub.children || sub.children.length === 0) && (
+            <ul className="brands-list">
+              <li>
+                <Link to={`/category/${parentId}`} className="view-all">Xem tất cả</Link>
+              </li>
+            </ul>
+          )}
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <nav className="main-menu-container">
-      {/* Top level categories */}
       <div className="main-categories">
-        {categories.map((category) => (
+        {topLevelCategories.map((category) => (
           <div
             key={category.categoryId}
             className={`category-item ${activeCategory === category.categoryId ? 'active' : ''}`}
-            onMouseEnter={() => handleMouseEnter(category.categoryId)}
+            onMouseEnter={() => setActiveCategory(category.categoryId)}
           >
             <Link to={`/category/${category.categoryId}`}>
               {category.name.toUpperCase()}
@@ -70,30 +85,16 @@ const MainMenu = () => {
           </div>
         ))}
       </div>
-
       {/* Subcategories dropdown */}
       {activeCategory && (
         <div 
           className="subcategories-container"
-          onMouseLeave={handleMouseLeave}
+          onMouseLeave={() => setActiveCategory(null)}
         >
-          <div className="subcategories-inner">
-            {getSubcategories(activeCategory).map((subcategory) => (
-              <div key={subcategory.categoryId} className="subcategory-column">
-                <Link to={`/category/${activeCategory}/${subcategory.categoryId}`} className="subcategory-title">
-                  {subcategory.name.toUpperCase()}
-                </Link>
-                <ul className="brands-list">
-                  {/* For now, we don't have brands in the API response, so we'll leave this empty */}
-                  <li>
-                    <Link to={`/category/${activeCategory}`} className="view-all">
-                      Xem tất cả
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            ))}
-          </div>
+          {renderSubcategoryColumns(
+            (topLevelCategories.find(cat => cat.categoryId === activeCategory)?.children || []),
+            activeCategory
+          )}
         </div>
       )}
     </nav>

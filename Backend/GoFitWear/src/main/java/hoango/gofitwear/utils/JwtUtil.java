@@ -51,6 +51,7 @@ public class JwtUtil {
         userInsideToken.setUsername(username);
         userInsideToken.setId(resLogin.getUser().getUserId());
         userInsideToken.setName(resLogin.getUser().getFullName());
+        userInsideToken.setRole(resLogin.getUser().getRole());
         Instant now = Instant.now();
         Instant validity = now.plus(jwtConfig.getAccessTokenExpirationSecond(), ChronoUnit.SECONDS);
 
@@ -70,6 +71,7 @@ public class JwtUtil {
         userInsideToken.setUsername(username);
         userInsideToken.setId(resLogin.getUser().getUserId());
         userInsideToken.setName(resLogin.getUser().getFullName());
+        userInsideToken.setRole(resLogin.getUser().getRole());
 
         Instant now = Instant.now();
         Instant validity = now.plus(jwtConfig.getRefreshTokenExpirationSecond(), ChronoUnit.SECONDS);

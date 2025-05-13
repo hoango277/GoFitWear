@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Spin, Button, message, Breadcrumb, Tabs, Select, InputNumber } from 'antd';
 import { HeartOutlined, HeartFilled, LoadingOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import customizeAxios from '../services/customizeAxios';
 
 const { TabPane } = Tabs;
 
@@ -38,15 +38,14 @@ const ProductDetail = () => {
       try {
         setLoading(true);
         // Fetch product details
-        const productResponse = await axios.get(`http://localhost:8080/api/products/${productId}`);
-        const productData = productResponse.data.data;
+        const productResponse = await customizeAxios.get(`/api/products/${productId}`);
+        const productData = productResponse.data;
         setProduct(productData);
 
         // Fetch product variants
-        const variantsResponse = await axios.get(
-          `http://localhost:8080/api/product-variants/product/${productId}?page=0&size=20`
-        );
-        const variantData = variantsResponse.data.data.data;
+        const variantsResponse = await customizeAxios.get(`/api/product-variants/product/${productId}?page=0&size=20`);
+        console.log(variantsResponse);
+        const variantData = variantsResponse.data.data;
         setVariants(variantData);
 
         // Extract unique sizes and colors
@@ -104,7 +103,7 @@ const ProductDetail = () => {
     if (!userInfo?.token) return;
     
     try {
-      const response = await axios.get('http://localhost:8080/api/wishlist', {
+      const response = await customizeAxios.get('/api/wishlist', {
         headers: {
           'Authorization': `Bearer ${userInfo.token}`
         }
@@ -151,15 +150,16 @@ const ProductDetail = () => {
     }
 
     try {
-      const response = await axios.post(
-        `http://localhost:8080/api/users/${userInfo.userId}/cart/items`,
+      const response = await customizeAxios.post(
+        `/api/users/${userInfo.userId}/cart/items`,
         {
           variantId: selectedVariant.variantId,
           quantity: quantity
         }
       );
+      console.log(response);
 
-      if (response.data.statusCode === 200) {
+      if (response.statusCode === 200) {
         message.success('Đã thêm sản phẩm vào giỏ hàng');
         // Trigger cart update event
         window.dispatchEvent(new CustomEvent('cart-updated'));
@@ -181,7 +181,7 @@ const ProductDetail = () => {
     try {
       if (inWishlist) {
         // Remove from wishlist
-        await axios.delete(`http://localhost:8080/api/wishlist/product/${productId}`, {
+        await customizeAxios.delete(`/api/wishlist/product/${productId}`, {
           headers: {
             'Authorization': `Bearer ${userInfo.token}`
           }
@@ -190,7 +190,7 @@ const ProductDetail = () => {
         message.success('Đã xóa khỏi danh sách yêu thích');
       } else {
         // Add to wishlist
-        await axios.post('http://localhost:8080/api/wishlist', 
+        await customizeAxios.post('/api/wishlist', 
           { productId: parseInt(productId) },
           {
             headers: {

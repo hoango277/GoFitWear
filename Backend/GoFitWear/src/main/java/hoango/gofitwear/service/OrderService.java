@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -249,6 +250,8 @@ public class OrderService {
         return convertToOrderResponse(updatedOrder);
     }
 
+
+
     public OrderResponse cancelOrder(Long userId, Long orderId) {
         // Get the current authenticated user
         User currentUser = getCurrentUser();
@@ -338,6 +341,8 @@ public class OrderService {
 
     // Helper method to get the current authenticated user
     private User getCurrentUser() {
+
+        SecurityContext x = SecurityContextHolder.getContext();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));

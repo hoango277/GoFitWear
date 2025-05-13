@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Card, Avatar, message, Tabs, Spin, Modal } from 'antd';
 import { FiUser, FiMail, FiPhone, FiMapPin, FiLock, FiEdit, FiCalendar, FiUserCheck } from 'react-icons/fi';
-import axios from '../services/customizeAxios'
+import customizeAxios from '../services/customizeAxios'
 import './UserProfile.css'; // Import custom CSS for overriding Ant Design styles
 
 const { TabPane } = Tabs;
@@ -36,7 +36,7 @@ const UserProfile = () => {
             // Gọi API để lấy thông tin người dùng theo ID
             let user = JSON.parse(localStorage.getItem('user'));
             console.log(user);
-            const response = await axios.get(`/users/${user.userId}`, {
+            const response = await customizeAxios.get(`/users/${user.userId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             console.log(response);
@@ -73,7 +73,7 @@ const UserProfile = () => {
                 throw new Error('Không tìm thấy token đăng nhập');
             }
             
-            const response = await axios.put('/users', values, {
+            const response = await customizeAxios.put('/users', values, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
@@ -95,16 +95,12 @@ const UserProfile = () => {
     const handleChangePassword = async (values) => {
         setSaving(true);
         try {
-            const token = localStorage.getItem('access_token');
-            if (!token) {
-                throw new Error('Không tìm thấy token đăng nhập');
-            }
-            
-            await api.post('/api/user/change-password', {
+            const userId = user?.userId || JSON.parse(localStorage.getItem('user'))?.userId;
+            if (!userId) throw new Error('Không tìm thấy userId');
+            await customizeAxios.post(`/api/users/${userId}/change-password`, {
                 currentPassword: values.currentPassword,
-                newPassword: values.newPassword
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
+                newPassword: values.newPassword,
+                confirmPassword: values.confirmPassword
             });
             
             message.success('Đổi mật khẩu thành công!');

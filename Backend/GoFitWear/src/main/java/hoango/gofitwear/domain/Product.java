@@ -56,6 +56,9 @@ public class Product {
     @ToString.Exclude
     private List<WishlistItem> wishlistItems = new ArrayList<>();
 
+    @Column(name="is_deleted")
+    private Boolean isDeleted = Boolean.FALSE;
+
     @PrePersist
     protected void onCreate() {
         createdAt = Instant.now();

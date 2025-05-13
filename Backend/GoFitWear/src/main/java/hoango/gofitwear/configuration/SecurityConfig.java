@@ -32,7 +32,21 @@ public class SecurityConfig {
                 .csrf(c -> c.disable())
                 .authorizeHttpRequests(
                         authorizeRequests -> authorizeRequests
-                                .anyRequest().permitAll()
+                                .requestMatchers(
+                                        "/auth/login",
+                                        "/auth/register",
+                                        "/auth/forgot-password",
+                                        "/",
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs/**",
+                                        "/swagger-resources/**",
+                                        "/swagger-resources",
+                                        "/swagger-resources/configuration/ui",
+                                        "/swagger-resources/configuration/security",
+                                        "/webjars/**"
+                                ).permitAll()
+                                .requestMatchers("/admin/**").hasRole("ADMIN")
+                                .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

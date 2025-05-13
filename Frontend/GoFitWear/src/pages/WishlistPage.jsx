@@ -22,7 +22,8 @@ const WishlistPage = () => {
                 setLoading(true);
                 const response = await fetchWishlist(userStorage.userId);
                 if (response && response.statusCode === 200) {
-                    setWishlistItems(response.data.data || []);
+                    const filtered = (response.data.data || []).filter(item => !item.product.isDeleted);
+                    setWishlistItems(filtered);
                 }
             } catch (error) {
                 console.error("Failed to fetch wishlist:", error);

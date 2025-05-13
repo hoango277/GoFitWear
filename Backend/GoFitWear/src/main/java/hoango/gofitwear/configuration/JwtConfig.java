@@ -6,6 +6,7 @@ import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -16,6 +17,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.util.Collections;
+import java.util.Map;
 
 
 @Getter
@@ -58,13 +61,32 @@ public class JwtConfig {
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new
-                JwtGrantedAuthoritiesConverter();
-        grantedAuthoritiesConverter.setAuthorityPrefix("");
-        grantedAuthoritiesConverter.setAuthoritiesClaimName("permission");
-        JwtAuthenticationConverter jwtAuthenticationConverter = new
-                JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+
+        // Tạo converter tùy chỉnh để trích xuất thông tin từ cấu trúc phức tạp
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            // Lấy đối tượng user từ JWT
+            Map<String, Object> userMap = jwt.getClaimAsMap("user");
+            if (userMap == null) {
+                return Collections.emptyList();
+            }
+
+            // Lấy role từ user.role
+            String role = (String) userMap.get("role");
+            if (role == null || role.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            // Tạo quyền với tiền tố ROLE_ để làm việc với hasRole() trong Spring Security
+            // Nếu role đã có tiền tố ROLE_, thì không thêm nữa
+            if (!role.startsWith("ROLE_")) {
+                role = "ROLE_" + role;
+            }
+
+            return Collections.singletonList(new SimpleGrantedAuthority(role));
+        });
+
         return jwtAuthenticationConverter;
     }
+
 }

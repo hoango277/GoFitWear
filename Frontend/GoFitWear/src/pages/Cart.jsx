@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { message, Checkbox, Empty } from 'antd';
-import axios from 'axios';
+import customizeAxios from '../services/customizeAxios';
 import { FiShoppingBag } from 'react-icons/fi';
 
 const Cart = () => {
@@ -25,12 +25,13 @@ const Cart = () => {
     const fetchCartItems = async (userId) => {
         try {
             setLoading(true);
-            const response = await axios.get(`http://localhost:8080/api/users/${userId}/cart`);
-            if (response.data.statusCode === 200) {
-                const items = response.data.data.cartItems || [];
-                setCartItems(items);
-                // Mặc định chọn tất cả sản phẩm khi tải giỏ hàng
-                setSelectedItems(items.map(item => item.cartItemId));
+            const response = await customizeAxios.get(`/api/users/${userId}/cart`);
+            if (response.statusCode === 200) {
+                const items = response.data.cartItems || [];
+                // Lọc bỏ sản phẩm bị ẩn
+                const filtered = items.filter(item => !item.variant.product.isDeleted);
+                setCartItems(filtered);
+                setSelectedItems(filtered.map(item => item.cartItemId));
             }
         } catch (error) {
             console.error('Error fetching cart:', error);
@@ -45,10 +46,10 @@ const Cart = () => {
         
         try {
             if (newQuantity <= 0) {
-                await axios.delete(`http://localhost:8080/api/users/${userInfo.userId}/cart/items/${cartItemId}`);
+                await customizeAxios.delete(`/api/users/${userInfo.userId}/cart/items/${cartItemId}`);
                 message.success("Đã xóa sản phẩm khỏi giỏ hàng");
             } else {
-                await axios.put(`http://localhost:8080/api/users/${userInfo.userId}/cart/items/${cartItemId}`, {
+                await customizeAxios.put(`/api/users/${userInfo.userId}/cart/items/${cartItemId}`, {
                     variantId: variantId,
                     quantity: newQuantity
                 });
