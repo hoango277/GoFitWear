@@ -189,56 +189,43 @@ const CategoryProducts = () => {
       }
       // Build filter string
       const filterString = buildFilterString();
-      let page = currentPage;
-      let result = [];
-      let stop = false;
-      while (result.length < pageSize && !stop) {
-        const response = await customizeAxios.get(`/api/products`, {
-          params: {
-            filter: filterString,
-            page,
-            size: pageSize,
-            sort
-          }
-        });
-        const productsData = response.data.data || [];
-        // Lọc bỏ sản phẩm bị ẩn
-        const filtered = productsData.filter(p => !p.isDeleted);
-        filtered.forEach(p => {
-          if (!result.some(item => item.productId === p.productId)) {
-            result.push(p);
-          }
-        });
-        if (productsData.length < pageSize) stop = true;
-        page++;
-      }
-      setProducts(result.slice(0, pageSize));
-      setTotalItems(result.length); // hoặc response.data.meta.total nếu muốn tổng thực tế
-      
+
+      // Gọi API chỉ 1 lần, lấy đúng trang
+      const response = await customizeAxios.get(`/api/products`, {
+        params: {
+          filter: filterString,
+          page: currentPage,
+          size: pageSize,
+          sort
+        }
+      });
+
+      // Lấy đúng mảng sản phẩm và tổng số sản phẩm
+      const productsData = response.data.data || [];
+      setProducts(productsData);
+      setTotalItems(response.data.meta.total || 0);
+
       // Only extract brands and max price from initial load
       if (isInitialLoad || brands.length === 0) {
         // Extract unique brands from products
         const uniqueBrands = [];
         const brandMap = {};
-        result.forEach(product => {
+        productsData.forEach(product => {
           if (product.brand && !brandMap[product.brand.brandId]) {
             brandMap[product.brand.brandId] = true;
             uniqueBrands.push(product.brand);
           }
         });
         setBrands(uniqueBrands);
-        
         // Find max price for slider
-        if (result.length > 0) {
-          const maxProductPrice = Math.max(...result.map(p => p.price || 0));
+        if (productsData.length > 0) {
+          const maxProductPrice = Math.max(...productsData.map(p => p.price || 0));
           // Round up to the nearest 100,000 for a cleaner max price
           const roundedMaxPrice = Math.ceil(maxProductPrice / 100000) * 100000;
-          
           if (!initialDataLoaded.current) {
             const newMaxPrice = roundedMaxPrice > 0 ? roundedMaxPrice : 5000000;
             setMaxPrice(newMaxPrice);
             setSelectedPriceRange([0, newMaxPrice]);
-            
             // Set the input values if they aren't already set from URL params
             if (minPriceInputRef.current && !minPriceInputRef.current.input.value) {
               minPriceInputRef.current.input.value = "0";
@@ -246,7 +233,6 @@ const CategoryProducts = () => {
             if (maxPriceInputRef.current && !maxPriceInputRef.current.input.value) {
               maxPriceInputRef.current.input.value = newMaxPrice.toString();
             }
-            
             initialDataLoaded.current = true;
           }
         }

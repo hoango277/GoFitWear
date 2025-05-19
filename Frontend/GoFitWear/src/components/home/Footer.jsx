@@ -118,13 +118,6 @@ const Footer = () => {
         
         <p className="text-xs text-gray-400">Thiết kế web bởi ❤️ hoango</p>
       </div>
-
-      {/* Zalo Chat Button */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <a href="#" className="block rounded-full bg-white p-2 shadow-lg">
-          <img src="/path-to-zalo-icon/zalo-icon.png" alt="Zalo Chat" className="w-10 h-10" />
-        </a>
-      </div>
     </footer>
   );
 };

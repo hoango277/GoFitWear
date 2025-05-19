@@ -297,10 +297,37 @@ const Header = () => {
         }
     };
 
+    // Hàm kiểm tra input search chống SQL injection
+    const hasDangerousChar = (input) => {
+        // Danh sách ký tự nguy hiểm
+        const blacklist = [
+            '--', ';', "'", '"', '\\', '/', '*', '#', '$', '^', '[', ']', '(', ')', '{', '}', '|', '<', '>'
+        ];
+        return blacklist.some(char => input.includes(char));
+    };
+
+    const validateSearchInput = (input) => {
+        // Loại bỏ các ký tự nguy hiểm phổ biến cho SQL injection
+        const blacklist = [
+            /--/g, /;/g, /'/g, /"/g, /\\/g, /\//g, /\*/g, /#/g, /\$/g, /\^/g, /\[/g, /\]/g, /\(/g, /\)/g, /\{/g, /\}/g, /\|/g, /</g, />/g
+        ];
+        let sanitized = input;
+        blacklist.forEach(pattern => {
+            sanitized = sanitized.replace(pattern, '');
+        });
+        return sanitized;
+    };
+
     const handleSearchSubmit = (e) => {
         e.preventDefault();
-        if (searchValue.trim() !== "") {
-            navigate(`/all-products?search=${encodeURIComponent(searchValue.trim())}`);
+        const rawValue = searchValue.trim();
+        if (hasDangerousChar(rawValue)) {
+            message.error('Từ khóa tìm kiếm chứa ký tự không hợp lệ!');
+            return;
+        }
+        const safeValue = validateSearchInput(rawValue);
+        if (safeValue !== "") {
+            navigate(`/all-products?search=${encodeURIComponent(safeValue)}`);
         } else {
             navigate(`/all-products`);
         }
